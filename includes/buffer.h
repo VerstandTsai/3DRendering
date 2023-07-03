@@ -1,16 +1,10 @@
 #ifndef BUFFER_H
 #define BUFFER_H
 
+#include "vec3.h"
 #include <vector>
 
 namespace proxima {
-    class Color {
-    public:
-        unsigned char r, g, b;
-        Color() : r(0), g(0), b(0) {};
-        Color(unsigned char r, unsigned char g, unsigned char b) : r(r), g(g), b(b) {};
-    };
-
     template<class T>
     class Buffer {
     private:
@@ -26,7 +20,7 @@ namespace proxima {
         void fill(T p);
     };
 
-    typedef Buffer<Color> ScreenBuffer;
+    typedef Buffer<Vec3> ScreenBuffer;
     typedef Buffer<float> ZBuffer;
 }
 

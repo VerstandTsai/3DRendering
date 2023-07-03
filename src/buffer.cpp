@@ -1,4 +1,5 @@
 #include "buffer.h"
+#include "vec3.h"
 
 #include <vector>
 #include <array>
@@ -33,7 +34,7 @@ namespace proxima {
         this->_pixels = std::vector<T>(this->_width * this->_height, p);
     }
 
-    template class Buffer<Color>;
+    template class Buffer<Vec3>;
     template class Buffer<float>;
 }
 

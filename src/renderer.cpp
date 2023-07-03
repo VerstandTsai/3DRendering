@@ -78,7 +78,7 @@ namespace proxima {
                     y >= 0 && y < this->_height &&
                     z < this->_z_buffer.pixel(x, y)
                 ) {
-                    this->_scr_buffer.set_pixel(x, y, Color(255, 255, 255));
+                    this->_scr_buffer.set_pixel(x, y, Vec3(1, 1, 1));
                     this->_z_buffer.set_pixel(x, y, z);
                 }
                 z += dz;
@@ -89,7 +89,7 @@ namespace proxima {
     }
 
     ScreenBuffer &Renderer::render(Object &obj) {
-        this->_scr_buffer.fill(Color(0, 0, 0));
+        this->_scr_buffer.fill(Vec3(0, 0, 0));
         this->_z_buffer.fill(std::numeric_limits<float>::infinity());
 
         // Project all vertices onto the screen
