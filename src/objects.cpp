@@ -2,16 +2,23 @@
 #include "vec3.h"
 
 namespace proxima {
-    Object::Object(Vec3 pos) {
+    Object::Object(Vec3 pos, Vec3 eulers, Vec3 color) {
         this->position = pos;
-        this->euler_angles = Vec3(0, 0, 0);
+        this->euler_angles = eulers;
+        this->color = color;
+    }
+
+    Camera::Camera(Vec3 pos, Vec3 eulers, float fov) : Object(pos, eulers) {
+        this->fov = fov;
     }
 
     Vec3 Camera::normal() {
         return rotate(Vec3(0, 0, -1), this->euler_angles);
     }
 
-    Cube::Cube(Vec3 pos, float width, float height, float depth) : Object(pos) {
+    Cube::Cube(Vec3 pos, Vec3 eulers, Vec3 color, float width, float height, float depth)
+        : Object(pos, eulers, color) 
+    {
         this->_width = width;
         this->_height = height;
         this->_depth = depth;

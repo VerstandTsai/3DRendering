@@ -14,15 +14,16 @@ namespace proxima {
     public:
         Vec3 position;
         Vec3 euler_angles;
+        Vec3 color;
         std::vector<Vec3> &vertices() { return this->_vertices; }
         std::vector<std::array<int, 3>> &face_indices() { return this->_face_indices; }
-        Object(Vec3 pos);
+        Object(Vec3 pos=Vec3(), Vec3 eulers=Vec3(), Vec3 color=Vec3(1, 1, 1));
     };
 
     class Camera : public Object {
     public:
         float fov;
-        Camera(Vec3 pos, float fov) : Object(pos) { this->fov = fov; }
+        Camera(Vec3 pos=Vec3(), Vec3 eulers=Vec3(), float fov=90);
         Vec3 normal();
     };
 
@@ -31,8 +32,14 @@ namespace proxima {
         float _width, _height, _depth;
 
     public:
-        Cube(Vec3 pos) : Cube(pos, 1, 1, 1) {}
-        Cube(Vec3 pos, float width, float height, float depth);
+        Cube(
+            Vec3 pos=Vec3(),
+            Vec3 eulers=Vec3(),
+            Vec3 color=Vec3(1, 1, 1),
+            float width=1,
+            float height=1,
+            float depth=1
+        );
         float width() { return this->_width; }
         float height() { return this->_height; }
         float depth() { return this->_depth; }

@@ -14,8 +14,7 @@ namespace proxima {
         _height(height),
         _scr_buffer(width, height),
         _z_buffer(width, height),
-        _d(0.1),
-        camera(Vec3(0, 0, 0), 90) {}
+        _d(0.1) {}
 
     std::array<Vec3, 2> Renderer::_get_base_xy() {
         // Find the normalized x and y vector on the plane
