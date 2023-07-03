@@ -5,14 +5,14 @@ int main() {
     int height = 720;
     proxima::Window window(width, height);
     proxima::Renderer renderer(width, height);
+    proxima::Scene scene;
 
-    renderer.camera.position = proxima::Vec3(0, 0, 2);
-    proxima::Cube cube(proxima::Vec3(0, 0, 0));
-    cube.euler_angles = proxima::Vec3(0, 0, 0);
+    scene.camera.position = proxima::Vec3(0, 0, 2);
+    scene["cube"] = proxima::Cube();
 
     while (!window.closed()) {
-        window.draw(renderer.render(cube));
-        cube.euler_angles += proxima::Vec3(10, 10, 10);
+        window.draw(renderer.render(scene));
+        scene["cube"].euler_angles += proxima::Vec3(10, 10, 10);
     }
 
     return 0;

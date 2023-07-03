@@ -4,6 +4,7 @@
 #include "vec3.h"
 #include "objects.h"
 #include "buffer.h"
+#include "scene.h"
 #include <array>
 
 namespace proxima {
@@ -14,14 +15,17 @@ namespace proxima {
         ScreenBuffer _scr_buffer;
         ZBuffer _z_buffer;
         float _d; // The near clipping plane distance
-        std::array<Vec3, 2> _get_base_xy();
-        Vec3 _project_point(Vec3 p, Vec3 base_x, Vec3 base_y);
+        Camera _camera;
+        Vec3 _base_x;
+        Vec3 _base_y;
+        void _calc_base_xy();
+        void _render_object(Object &obj);
+        Vec3 _project_point(Vec3 p);
         void _scanline(std::array<Vec3, 3> v);
 
     public:
-        Camera camera;
         Renderer(int width, int height);
-        ScreenBuffer &render(Object &obj);
+        ScreenBuffer &render(Scene &scene);
     };
 }
 
