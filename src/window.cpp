@@ -31,11 +31,8 @@ namespace proxima {
     void Window::draw(const ScreenBuffer &buffer) {
         for (int i=0; i<this->_height; i++) {
             for (int j=0; j<this->_width; j++) {
-                Vec3 c = buffer.pixel(j, i);
-                int r = (int)(c.x * 255) % 256;
-                int g = (int)(c.y * 255) % 256;
-                int b = (int)(c.z * 255) % 256;
-                SDL_SetRenderDrawColor(this->_renderer, r, g, b, SDL_ALPHA_OPAQUE);
+                Vec3 c = buffer.pixel(j, i) * 255;
+                SDL_SetRenderDrawColor(this->_renderer, c.x, c.y, c.z, SDL_ALPHA_OPAQUE);
                 SDL_RenderDrawPoint(this->_renderer, j, i);
             }
         }
