@@ -31,6 +31,7 @@ namespace proxima {
     }
 
     void Renderer::_render_object(Object &obj) {
+        // Project all vertices onto the screen
         std::vector<Vec3> projected_vertices;
         for (Vec3 vertex : obj.vertices()) {
             Vec3 adjusted = rotate(vertex, obj.euler_angles) + obj.position;
@@ -39,11 +40,18 @@ namespace proxima {
 
         // Scanline each face with face-vertex indices table
         for (std::array<int, 3> face_index : obj.face_indices()) {
+            std::array<Vec3, 3> face_v;
             std::array<Vec3, 3> v;
             for (int i=0; i<3; i++) {
+                face_v[i] = rotate(obj.vertices()[face_index[i]], obj.euler_angles) + obj.position;
                 v[i] = projected_vertices[face_index[i]];
             }
-            this->_scanline(v);
+            Vec3 face_normal = cross(face_v[1] - face_v[0], face_v[2] - face_v[0]);
+            face_normal /= face_normal.norm();
+            float prod = dot(face_normal, this->_light_direction);
+            Vec3 color;
+            color = std::abs(prod) * Vec3(1, 1, 1) * (prod < 0) + (1 - std::abs(prod)) * obj.color;
+            this->_scanline(v, color);
         }
     }
 
@@ -64,7 +72,7 @@ namespace proxima {
         return Vec3(round(x_coor), round(y_coor), op.norm());
     }
 
-    void Renderer::_scanline(std::array<Vec3, 3> v) {
+    void Renderer::_scanline(std::array<Vec3, 3> v, Vec3 color) {
         std::sort(v.begin(), v.end(), [](Vec3 a, Vec3 b) {
             return a.y < b.y;
         }); // Sort the three v of a triangle by their y-value
@@ -92,7 +100,7 @@ namespace proxima {
                     y >= 0 && y < this->_height &&
                     z < this->_z_buffer.pixel(x, y)
                 ) {
-                    this->_scr_buffer.set_pixel(x, y, Vec3(1, 1, 1));
+                    this->_scr_buffer.set_pixel(x, y, color);
                     this->_z_buffer.set_pixel(x, y, z);
                 }
                 z += dz;
@@ -106,9 +114,8 @@ namespace proxima {
         this->_scr_buffer.fill(Vec3(0, 0, 0));
         this->_z_buffer.fill(std::numeric_limits<float>::infinity());
         this->_camera = scene.camera;
+        this->_light_direction = scene.light_direction;
         this->_calc_base_xy();
-
-        // Project all vertices onto the screen
         for (auto &obj_entry : scene.objects()) {
             this->_render_object(obj_entry.second);
         }
