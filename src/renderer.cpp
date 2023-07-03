@@ -73,7 +73,11 @@ namespace proxima {
                 z = vs[1].z;
             }
             for (int x=x0; x<x1; x++) {
-                if (z < this->_z_buffer.pixel(x, y)) {
+                if (
+                    x >= 0 && x < this->_width &&
+                    y >= 0 && y < this->_height &&
+                    z < this->_z_buffer.pixel(x, y)
+                ) {
                     this->_scr_buffer.set_pixel(x, y, Color(255, 255, 255));
                     this->_z_buffer.set_pixel(x, y, z);
                 }
