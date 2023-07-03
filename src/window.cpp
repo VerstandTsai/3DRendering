@@ -22,8 +22,9 @@ namespace proxima {
 
     bool Window::closed() {
         SDL_Event event;
-        SDL_PollEvent(&event);
-        if (event.type == SDL_QUIT) return true;
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) return true;
+        }
         return false;
     }
 
