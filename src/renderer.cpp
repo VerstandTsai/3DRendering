@@ -60,7 +60,7 @@ namespace proxima {
         Vec3 dac = (v[2] - v[0]) / (v[2].y - v[0].y);
         Vec3 dbc = (v[2] - v[1]) / (v[2].y - v[1].y);
 
-        bool flat_top = v[1].y - v[0].y == 0;
+        bool flat_top = v[1].y == v[0].y;
 
         Vec3 vs[] = {flat_top ? v[1] : v[0], v[0]};
         for (int y=v[0].y; y<v[2].y; y++) {
