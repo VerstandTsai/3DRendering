@@ -45,6 +45,22 @@ namespace proxima {
         float depth() { return this->_depth; }
         void set_size(float width, float height, float depth);
     };
+
+    class Sphere : public Object {
+    private:
+        float _radius;
+
+    public:
+        Sphere(
+            float radius=1,
+            int resolution=6,
+            Vec3 color=Vec3(1, 1, 1),
+            Vec3 pos=Vec3(),
+            Vec3 eulers=Vec3()
+        );
+        float radius() { return this->_radius; }
+        void set_radius(float radius);
+    };
 }
 
 #endif // OBJECTS_H
