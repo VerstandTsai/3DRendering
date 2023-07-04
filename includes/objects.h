@@ -55,7 +55,7 @@ namespace proxima {
     public:
         Sphere(
             float radius=1,
-            int resolution=6,
+            int resolution=12,
             Vec3 color=Vec3(1, 1, 1),
             Vec3 pos=Vec3(),
             Vec3 eulers=Vec3()
