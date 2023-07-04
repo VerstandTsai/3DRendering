@@ -7,7 +7,7 @@ int main() {
     int height = 720;
     Window window(width, height);
     Renderer renderer(width, height);
-    Scene scene;
+    Scene scene(Vec3(0.5, 0.8, 1));
 
     scene.camera.position = Vec3(0, 0, 8);
     scene.light_direction = rotate(Vec3(1, 0, 0), Vec3(0, 0, -45));

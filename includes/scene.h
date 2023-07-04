@@ -14,8 +14,9 @@ namespace proxima {
 
     public:
         Camera camera;
+        Vec3 bg_color;
         Vec3 light_direction;
-        Scene(Vec3 light_direction=Vec3(0, -1, 0));
+        Scene(Vec3 bg_color=Vec3(), Vec3 light_direction=Vec3(0, -1, 0));
         std::map<std::string, Object> objects() { return this->_objects; }
         Object &operator[](std::string obj_name);
     };

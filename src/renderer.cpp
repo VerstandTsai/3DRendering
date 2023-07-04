@@ -126,7 +126,7 @@ namespace proxima {
     }
 
     ScreenBuffer &Renderer::render(Scene &scene) {
-        this->_scr_buffer.fill(Vec3(0, 0, 0));
+        this->_scr_buffer.fill(scene.bg_color);
         this->_z_buffer.fill(std::numeric_limits<float>::infinity());
         this->_scene = scene;
         this->_calc_base_xy();
