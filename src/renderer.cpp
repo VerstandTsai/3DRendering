@@ -19,10 +19,8 @@ namespace proxima {
     void Renderer::_calc_base_xy() {
         // Find the normalized x and y vector on the plane
         // Find x first because it is always perpendicular to the world y-axis
-        Vec3 camera_x = cross(this->_camera.normal(), Vec3(0, 1, 0));
-        camera_x /= camera_x.norm();
-        Vec3 camera_y = cross(camera_x, this->_camera.normal());
-        camera_y /= camera_y.norm();
+        Vec3 camera_x = cross(this->_camera.normal(), Vec3(0, 1, 0)).normalized();
+        Vec3 camera_y = cross(camera_x, this->_camera.normal()).normalized();
 
         // Nomarlize x and y proportioanl to the size of the plane
         float plane_half_width = this->_d * tan(this->_camera.fov / 2);
@@ -46,8 +44,7 @@ namespace proxima {
                 face_v[i] = rotate(obj.vertices()[face_index[i]], obj.euler_angles) + obj.position;
                 v[i] = projected_vertices[face_index[i]];
             }
-            Vec3 face_normal = cross(face_v[1] - face_v[0], face_v[2] - face_v[0]);
-            face_normal /= face_normal.norm();
+            Vec3 face_normal = cross(face_v[1] - face_v[0], face_v[2] - face_v[0]).normalized();
             float prod = dot(face_normal, this->_light_direction);
             Vec3 color;
             color = std::abs(prod) * Vec3(1, 1, 1) * (prod < 0) + (1 - std::abs(prod)) * obj.color;

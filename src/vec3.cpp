@@ -17,6 +17,10 @@ namespace proxima {
         return sqrt(this->x*this->x + this->y*this->y + this->z*this->z);
     }
 
+    Vec3 Vec3::normalized() {
+        return *this / this->norm();
+    }
+
     Vec3 &Vec3::operator+=(const Vec3 &v) {
         this->x += v.x;
         this->y += v.y;

@@ -16,6 +16,7 @@ namespace proxima {
         Vec3 &operator*=(float a);
         Vec3 &operator/=(float a);
         float norm();
+        Vec3 normalized();
     };
 
     class Matrix3x3 {
