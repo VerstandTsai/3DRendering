@@ -58,6 +58,8 @@ namespace proxima {
         // Project p onto the viewing plane
         // and let the center of the plane be the origin
         Vec3 op = p - this->_camera.position;
+        if (dot(op, this->_camera.normal()) / this->_camera.normal().magnitude() < this->_d)
+            return Vec3(-1, -1, std::numeric_limits<float>::infinity());
         Vec3 p_on_plane = this->_d * op / dot(this->_camera.normal(), op);
         Vec3 o_on_plane = this->_d * this->_camera.normal();
         Vec3 op_on_plane = p_on_plane - o_on_plane;
