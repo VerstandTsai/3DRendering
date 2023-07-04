@@ -29,27 +29,37 @@ namespace proxima {
     }
 
     void Renderer::_render_object(Object &obj) {
-        // Project all vertices onto the screen
-        std::vector<Vec3> adjusted_vertices;
+        // Calculate all vertices' absolute coordinates
+        // and project them onto the screen
+        std::vector<Vec3> absolute_vertices;
         std::vector<Vec3> projected_vertices;
         for (Vec3 vertex : obj.vertices()) {
-            Vec3 adjusted = rotate(vertex, obj.euler_angles) + obj.position;
-            adjusted_vertices.push_back(adjusted);
-            projected_vertices.push_back(this->_project_point(adjusted));
+            Vec3 absolute = rotate(vertex, obj.euler_angles) + obj.position;
+            absolute_vertices.push_back(absolute);
+            projected_vertices.push_back(this->_project_point(absolute));
         }
 
-        // Scanline each face with face-vertex indices table
+        // Scanline each face using the face-vertex indices table
         for (std::array<int, 3> face_index : obj.face_indices()) {
-            std::array<Vec3, 3> adj_v;
+            std::array<Vec3, 3> abs_v;
             std::array<Vec3, 3> proj_v;
             for (int i=0; i<3; i++) {
-                adj_v[i] = adjusted_vertices[face_index[i]];
+                abs_v[i] = absolute_vertices[face_index[i]];
                 proj_v[i] = projected_vertices[face_index[i]];
             }
-            Vec3 face_normal = cross(adj_v[1] - adj_v[0], adj_v[2] - adj_v[0]).normalized();
+
+            // Calculate the normal of the face for shading
+            Vec3 face_normal = cross(abs_v[1] - abs_v[0], abs_v[2] - abs_v[0]).normalized();
+
+            // Don't rendering the back of a face
+            Vec3 op = (abs_v[0] + abs_v[1] + abs_v[2]) / 3 - this->_camera.position;
+            if (dot(face_normal, op) > 0) continue;
+
+            // The face is lighter if it's facing towards the light
             float prod = dot(face_normal, this->_light_direction);
-            Vec3 color;
-            color = std::abs(prod) * Vec3(1, 1, 1) * (prod < 0) + (1 - std::abs(prod)) * obj.color;
+            Vec3 color =
+                std::abs(prod) * Vec3(1, 1, 1) * (prod < 0)
+                + (1 - std::abs(prod)) * obj.color;
             this->_scanline(proj_v, color);
         }
     }
