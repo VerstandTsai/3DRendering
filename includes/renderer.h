@@ -15,8 +15,8 @@ namespace proxima {
         ScreenBuffer _scr_buffer;
         ZBuffer _z_buffer;
         float _d; // The near clipping plane distance
-        Camera _camera;
-        Vec3 _light_direction;
+        Scene _dummy;
+        Scene &_scene;
         Vec3 _base_x;
         Vec3 _base_y;
         void _calc_base_xy();

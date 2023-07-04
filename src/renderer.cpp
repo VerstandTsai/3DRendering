@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "buffer.h"
 #include "objects.h"
+#include "scene.h"
 #include "vec3.h"
 #include <array>
 #include <algorithm>
@@ -14,16 +15,18 @@ namespace proxima {
         _height(height),
         _scr_buffer(width, height),
         _z_buffer(width, height),
-        _d(0.1) {}
+        _d(0.1),
+        _dummy(),
+        _scene(this->_dummy) {}
 
     void Renderer::_calc_base_xy() {
         // Find the normalized x and y vector on the plane
         // Find x first because it is always perpendicular to the world y-axis
-        Vec3 camera_x = cross(this->_camera.normal(), Vec3(0, 1, 0)).normalized();
-        Vec3 camera_y = cross(camera_x, this->_camera.normal()).normalized();
+        Vec3 camera_x = cross(this->_scene.camera.normal(), Vec3(0, 1, 0)).normalized();
+        Vec3 camera_y = cross(camera_x, this->_scene.camera.normal()).normalized();
 
         // Nomarlize x and y proportioanl to the size of the plane
-        float plane_half_width = this->_d * tan(this->_camera.fov / 2);
+        float plane_half_width = this->_d * tan(this->_scene.camera.fov / 2);
         this->_base_x = plane_half_width / (this->_width / 2.0) * camera_x;
         this->_base_y = _base_x.magnitude() * camera_y;
     }
@@ -52,14 +55,15 @@ namespace proxima {
             Vec3 face_normal = cross(abs_v[1] - abs_v[0], abs_v[2] - abs_v[0]).normalized();
 
             // Don't rendering the back of a face
-            Vec3 op = (abs_v[0] + abs_v[1] + abs_v[2]) / 3 - this->_camera.position;
+            Vec3 op = (abs_v[0] - this->_scene.camera.position).normalized();
             if (dot(face_normal, op) > 0) continue;
 
             // The face is lighter if it's facing towards the light
-            float prod = dot(face_normal, this->_light_direction);
+            float prod = dot(face_normal, this->_scene.light_direction);
             Vec3 color =
                 std::abs(prod) * Vec3(1, 1, 1) * (prod < 0)
                 + (1 - std::abs(prod)) * obj.color;
+
             this->_scanline(proj_v, color);
         }
     }
@@ -67,11 +71,11 @@ namespace proxima {
     Vec3 Renderer::_project_point(Vec3 p) {
         // Project p onto the viewing plane
         // and let the center of the plane be the origin
-        Vec3 op = p - this->_camera.position;
-        if (dot(op, this->_camera.normal()) / this->_camera.normal().magnitude() < this->_d)
+        Vec3 op = p - this->_scene.camera.position;
+        if (dot(op, this->_scene.camera.normal()) / this->_scene.camera.normal().magnitude() < this->_d)
             return Vec3(-1, -1, std::numeric_limits<float>::infinity());
-        Vec3 p_on_plane = this->_d * op / dot(this->_camera.normal(), op);
-        Vec3 o_on_plane = this->_d * this->_camera.normal();
+        Vec3 p_on_plane = this->_d * op / dot(this->_scene.camera.normal(), op);
+        Vec3 o_on_plane = this->_d * this->_scene.camera.normal();
         Vec3 op_on_plane = p_on_plane - o_on_plane;
 
         // Find the 2d coordinates of op on the plane with x and y base vectors
@@ -124,8 +128,7 @@ namespace proxima {
     ScreenBuffer &Renderer::render(Scene &scene) {
         this->_scr_buffer.fill(Vec3(0, 0, 0));
         this->_z_buffer.fill(std::numeric_limits<float>::infinity());
-        this->_camera = scene.camera;
-        this->_light_direction = scene.light_direction;
+        this->_scene = scene;
         this->_calc_base_xy();
         for (auto &obj_entry : scene.objects()) {
             this->_render_object(obj_entry.second);
