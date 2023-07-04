@@ -1,7 +1,7 @@
 INC = ./includes
 SRC = ./src
 CXX = g++
-CXXFLAGS = -Wall -g -O3 -I$(INC)
+CXXFLAGS = -Wall -g -std=c++2a -O3 -I$(INC)
 LDFLAGS = -L.
 LDLIBS = -lprox -lSDL2
 AR = ar

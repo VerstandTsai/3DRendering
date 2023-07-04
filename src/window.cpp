@@ -23,8 +23,23 @@ namespace proxima {
     bool Window::closed() {
         SDL_Event event;
         while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT) return true;
+            switch (event.type) {
+            case SDL_QUIT:
+                return true;
+            case SDL_KEYDOWN:
+                this->_keyboard[event.key.keysym.sym] = true;
+                break;
+            case SDL_KEYUP:
+                this->_keyboard[event.key.keysym.sym] = false;
+                break;
+            }
         }
+        return false;
+    }
+
+    bool Window::keydown(KeyCode code) {
+        if (this->_keyboard.contains(code))
+            return this->_keyboard[code];
         return false;
     }
 
