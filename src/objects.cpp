@@ -1,11 +1,35 @@
 #include "objects.h"
 #include "vec3.h"
 
+#include <fstream>
+#include <sstream>
+#include <string>
+
 namespace proxima {
     Object::Object(Vec3 pos, Vec3 eulers, Vec3 color) {
         this->position = pos;
         this->euler_angles = eulers;
         this->color = color;
+    }
+
+    Object::Object(std::string filename) : Object(Vec3(), Vec3(), Vec3(1, 1, 1)) {
+        std::ifstream infile(filename);
+        std::string line;
+        while (std::getline(infile, line)) {
+            std::istringstream iss(line);
+            std::string cmd;
+            iss >> cmd;
+            if (cmd == "v") {
+                float x, y, z;
+                iss >> x >> y >> z;
+                this->_vertices.push_back(Vec3(x, y, z));
+            }
+            if (cmd == "f") {
+                int a, b, c;
+                iss >> a >> b >> c;
+                this->_face_indices.push_back({a-1, b-1, c-1});
+            }
+        }
     }
 
     Camera::Camera(float fov, Vec3 pos, Vec3 eulers) : Object(pos, eulers) {

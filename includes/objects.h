@@ -3,6 +3,7 @@
 
 #include "vec3.h"
 #include <array>
+#include <string>
 #include <vector>
 
 namespace proxima {
@@ -18,6 +19,7 @@ namespace proxima {
         std::vector<Vec3> &vertices() { return this->_vertices; }
         std::vector<std::array<int, 3>> &face_indices() { return this->_face_indices; }
         Object(Vec3 pos=Vec3(), Vec3 eulers=Vec3(), Vec3 color=Vec3(1, 1, 1));
+        Object(std::string filename);
     };
 
     class Camera : public Object {
