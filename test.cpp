@@ -11,7 +11,7 @@ int main() {
 
     scene.camera.position = Vec3(0, 0, 2);
     scene.light_direction = rotate(Vec3(0, -1, 0), Vec3(45, 0, 45));
-    scene["ball"] = Sphere(1, 36, Vec3(1, 0.5, 0.5));
+    scene["ball"] = Sphere(1, 36, Vec3(0, 0.5, 1));
 
     while (!window.closed()) {
         Vec3 right = cross(scene.camera.normal(), Vec3(0, 1, 0)).normalized();
