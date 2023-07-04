@@ -23,7 +23,7 @@ namespace proxima {
     class Camera : public Object {
     public:
         float fov;
-        Camera(Vec3 pos=Vec3(), Vec3 eulers=Vec3(), float fov=90);
+        Camera(float fov=90, Vec3 pos=Vec3(), Vec3 eulers=Vec3());
         Vec3 normal();
     };
 
@@ -33,12 +33,12 @@ namespace proxima {
 
     public:
         Cube(
-            Vec3 pos=Vec3(),
-            Vec3 eulers=Vec3(),
-            Vec3 color=Vec3(1, 1, 1),
             float width=1,
             float height=1,
-            float depth=1
+            float depth=1,
+            Vec3 color=Vec3(1, 1, 1),
+            Vec3 pos=Vec3(),
+            Vec3 eulers=Vec3()
         );
         float width() { return this->_width; }
         float height() { return this->_height; }

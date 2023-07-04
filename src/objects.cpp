@@ -8,7 +8,7 @@ namespace proxima {
         this->color = color;
     }
 
-    Camera::Camera(Vec3 pos, Vec3 eulers, float fov) : Object(pos, eulers) {
+    Camera::Camera(float fov, Vec3 pos, Vec3 eulers) : Object(pos, eulers) {
         this->fov = fov;
     }
 
@@ -16,7 +16,7 @@ namespace proxima {
         return rotate(Vec3(0, 0, -1), this->euler_angles);
     }
 
-    Cube::Cube(Vec3 pos, Vec3 eulers, Vec3 color, float width, float height, float depth)
+    Cube::Cube(float width, float height, float depth, Vec3 color, Vec3 pos, Vec3 eulers)
         : Object(pos, eulers, color) 
     {
         this->_width = width;
