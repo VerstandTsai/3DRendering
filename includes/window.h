@@ -11,7 +11,9 @@ namespace proxima {
         A = SDLK_a,
         D = SDLK_d,
         S = SDLK_s,
-        W = SDLK_w
+        W = SDLK_w,
+        SPACE = SDLK_SPACE,
+        LSHIFT = SDLK_LSHIFT
     };
 
     class Window {
@@ -22,12 +24,16 @@ namespace proxima {
         SDL_Window *_window;
         SDL_Renderer *_renderer;
         std::map<int, bool> _keyboard;
+        int _mouse_dx;
+        int _mouse_dy;
 
     public:
         Window(int width, int height);
         ~Window();
         bool closed();
         bool keydown(KeyCode code);
+        int mouse_dx() { return this->_mouse_dx; }
+        int mouse_dy() { return this->_mouse_dy; }
         void draw(const ScreenBuffer &buffer);
     };
 }

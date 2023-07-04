@@ -11,25 +11,28 @@ int main() {
 
     scene.camera.position = Vec3(0, 0, 2);
     scene.light_direction = rotate(Vec3(0, -1, 0), Vec3(45, 45, 45));
-    scene["cube"] = Cube();
-    scene["cube"].color = Vec3(0, 0.5, 1);
+    scene["cube"] = Cube(2, 1, 1, Vec3(0, 0.5, 1));
 
     while (!window.closed()) {
         Vec3 right = cross(scene.camera.normal(), Vec3(0, 1, 0)).normalized();
         Vec3 front = cross(Vec3(0, 1, 0), right);
-        if (window.keydown(W)) {
+
+        if (window.keydown(W))
             scene.camera.position += front;
-        }
-        if (window.keydown(S)) {
+        if (window.keydown(S))
             scene.camera.position -= front;
-        }
-        if (window.keydown(A)) {
+        if (window.keydown(A))
             scene.camera.position -= right;
-        }
-        if (window.keydown(D)) {
+        if (window.keydown(D))
             scene.camera.position += right;
-        }
-        scene["cube"].euler_angles += proxima::Vec3(5, 5, 5);
+        if (window.keydown(SPACE))
+            scene.camera.position += Vec3(0, 1, 0);
+        if (window.keydown(LSHIFT))
+            scene.camera.position -= Vec3(0, 1, 0);
+
+        scene.camera.euler_angles -= Vec3(window.mouse_dy(), window.mouse_dx(), 0);
+
+        scene["cube"].euler_angles += Vec3(5, 5, 5);
         window.draw(renderer.render(scene));
     }
 

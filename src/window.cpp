@@ -7,6 +7,8 @@ namespace proxima {
     Window::Window(int width, int height) {
         this->_width = width;
         this->_height = height;
+        this->_mouse_dx = 0;
+        this->_mouse_dy = 0;
         if (!_sdl_inited) {
             SDL_Init(SDL_INIT_VIDEO);
             _sdl_inited = true;
@@ -22,6 +24,7 @@ namespace proxima {
 
     bool Window::closed() {
         SDL_Event event;
+        bool mouse_moved = false;
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_QUIT:
@@ -32,7 +35,15 @@ namespace proxima {
             case SDL_KEYUP:
                 this->_keyboard[event.key.keysym.sym] = false;
                 break;
+            case SDL_MOUSEMOTION:
+                mouse_moved = true;
+                this->_mouse_dx = event.motion.xrel;
+                this->_mouse_dy = event.motion.yrel;
             }
+        }
+        if (!mouse_moved) {
+            this->_mouse_dx = 0;
+            this->_mouse_dy = 0;
         }
         return false;
     }
