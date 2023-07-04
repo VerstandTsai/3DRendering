@@ -30,25 +30,27 @@ namespace proxima {
 
     void Renderer::_render_object(Object &obj) {
         // Project all vertices onto the screen
+        std::vector<Vec3> adjusted_vertices;
         std::vector<Vec3> projected_vertices;
         for (Vec3 vertex : obj.vertices()) {
             Vec3 adjusted = rotate(vertex, obj.euler_angles) + obj.position;
+            adjusted_vertices.push_back(adjusted);
             projected_vertices.push_back(this->_project_point(adjusted));
         }
 
         // Scanline each face with face-vertex indices table
         for (std::array<int, 3> face_index : obj.face_indices()) {
-            std::array<Vec3, 3> face_v;
-            std::array<Vec3, 3> v;
+            std::array<Vec3, 3> adj_v;
+            std::array<Vec3, 3> proj_v;
             for (int i=0; i<3; i++) {
-                face_v[i] = rotate(obj.vertices()[face_index[i]], obj.euler_angles) + obj.position;
-                v[i] = projected_vertices[face_index[i]];
+                adj_v[i] = adjusted_vertices[face_index[i]];
+                proj_v[i] = projected_vertices[face_index[i]];
             }
-            Vec3 face_normal = cross(face_v[1] - face_v[0], face_v[2] - face_v[0]).normalized();
+            Vec3 face_normal = cross(adj_v[1] - adj_v[0], adj_v[2] - adj_v[0]).normalized();
             float prod = dot(face_normal, this->_light_direction);
             Vec3 color;
             color = std::abs(prod) * Vec3(1, 1, 1) * (prod < 0) + (1 - std::abs(prod)) * obj.color;
-            this->_scanline(v, color);
+            this->_scanline(proj_v, color);
         }
     }
 
