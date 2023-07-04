@@ -13,12 +13,12 @@ namespace proxima {
         }
     }
 
-    float Vec3::norm() {
+    float Vec3::magnitude() {
         return sqrt(this->x*this->x + this->y*this->y + this->z*this->z);
     }
 
     Vec3 Vec3::normalized() {
-        return *this / this->norm();
+        return *this / this->magnitude();
     }
 
     Vec3 &Vec3::operator+=(const Vec3 &v) {

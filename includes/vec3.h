@@ -15,7 +15,7 @@ namespace proxima {
         Vec3 &operator-=(const Vec3 &v);
         Vec3 &operator*=(float a);
         Vec3 &operator/=(float a);
-        float norm();
+        float magnitude();
         Vec3 normalized();
     };
 

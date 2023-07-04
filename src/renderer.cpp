@@ -25,7 +25,7 @@ namespace proxima {
         // Nomarlize x and y proportioanl to the size of the plane
         float plane_half_width = this->_d * tan(this->_camera.fov / 2);
         this->_base_x = plane_half_width / (this->_width / 2.0) * camera_x;
-        this->_base_y = _base_x.norm() * camera_y;
+        this->_base_y = _base_x.magnitude() * camera_y;
     }
 
     void Renderer::_render_object(Object &obj) {
@@ -63,12 +63,12 @@ namespace proxima {
         Vec3 op_on_plane = p_on_plane - o_on_plane;
 
         // Find the 2d coordinates of op on the plane with x and y base vectors
-        float x_coor = dot(op_on_plane, this->_base_x) / this->_base_x.norm() / this->_base_x.norm();
-        float y_coor = dot(op_on_plane, this->_base_y) / this->_base_y.norm() / this->_base_y.norm();
+        float x_coor = dot(op_on_plane, this->_base_x) / this->_base_x.magnitude() / this->_base_x.magnitude();
+        float y_coor = dot(op_on_plane, this->_base_y) / this->_base_y.magnitude() / this->_base_y.magnitude();
         x_coor += this->_width / 2.0;
         y_coor = -y_coor + this->_height / 2.0;
 
-        return Vec3(round(x_coor), round(y_coor), op.norm());
+        return Vec3(round(x_coor), round(y_coor), op.magnitude());
     }
 
     void Renderer::_scanline(std::array<Vec3, 3> v, Vec3 color) {
