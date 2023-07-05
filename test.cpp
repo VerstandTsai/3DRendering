@@ -10,7 +10,7 @@ int main() {
     Scene scene(Vec3(0.5, 0.8, 1));
 
     scene.camera.position = Vec3(0, 0, 8);
-    scene.light_direction = rotate(Vec3(1, 0, 0), Vec3(0, 0, -45));
+    scene.light_direction = rotate(Vec3(1, 0, 0), Vec3(45, 0, -45));
 
     scene["monkey"] = Object("suzanne.obj");
     scene["monkey"].position = Vec3(-5, 0, 0);

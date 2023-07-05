@@ -22,7 +22,8 @@ namespace proxima {
         void _calc_base_xy();
         void _render_object(Object &obj);
         Vec3 _project_point(Vec3 p);
-        void _scanline(std::array<Vec3, 3> v, Vec3 color);
+        Vec3 _shade(std::array<Vec3, 3> face, Vec3 color, int shininess); 
+        void _scanline(std::array<Vec3, 3> f, Vec3 color);
 
     public:
         Renderer(int width, int height);

@@ -6,13 +6,14 @@
 #include <string>
 
 namespace proxima {
-    Object::Object(Vec3 pos, Vec3 eulers, Vec3 color) {
+    Object::Object(Vec3 pos, Vec3 eulers, Vec3 color, int shininess) {
         this->position = pos;
         this->euler_angles = eulers;
         this->color = color;
+        this->shininess = shininess;
     }
 
-    Object::Object(std::string filename) : Object(Vec3(), Vec3(), Vec3(1, 1, 1)) {
+    Object::Object(std::string filename) : Object() {
         std::ifstream infile(filename);
         std::string line;
         while (std::getline(infile, line)) {
@@ -40,8 +41,8 @@ namespace proxima {
         return rotate(Vec3(0, 0, -1), this->euler_angles);
     }
 
-    Cube::Cube(float width, float height, float depth, Vec3 color, Vec3 pos, Vec3 eulers)
-        : Object(pos, eulers, color)
+    Cube::Cube(float width, float height, float depth, Vec3 color, int shininess, Vec3 pos, Vec3 eulers)
+        : Object(pos, eulers, color, shininess)
     {
         this->_width = width;
         this->_height = height;
@@ -70,8 +71,8 @@ namespace proxima {
         this->_face_indices.push_back({6, 7, 5});
     }
 
-    Sphere::Sphere(float radius, int resolution, Vec3 color, Vec3 pos, Vec3 eulers)
-        : Object(pos, eulers, color)
+    Sphere::Sphere(float radius, int resolution, Vec3 color, int shininess, Vec3 pos, Vec3 eulers)
+        : Object(pos, eulers, color, shininess)
     {
         this->_radius = radius;
         float theta = 180.0 / resolution;

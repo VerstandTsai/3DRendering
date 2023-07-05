@@ -51,19 +51,8 @@ namespace proxima {
                 proj_v[i] = projected_vertices[face_index[i]];
             }
 
-            // Calculate the normal of the face for shading
-            Vec3 face_normal = cross(abs_v[1] - abs_v[0], abs_v[2] - abs_v[0]).normalized();
-
-            // Don't rendering the back of a face
-            Vec3 op = (abs_v[0] - this->_scene.camera.position).normalized();
-            if (dot(face_normal, op) > 0) continue;
-
-            // The face is lighter if it's facing towards the light
-            float prod = dot(face_normal, this->_scene.light_direction);
-            Vec3 color =
-                std::abs(prod) * Vec3(1, 1, 1) * (prod < 0)
-                + (1 - std::abs(prod)) * obj.color;
-
+            Vec3 color = this->_shade(abs_v, obj.color, obj.shininess);
+            if (color.x < 0) continue;
             this->_scanline(proj_v, color);
         }
     }
@@ -87,20 +76,46 @@ namespace proxima {
         return Vec3(round(x_coor), round(y_coor), op.magnitude());
     }
 
-    void Renderer::_scanline(std::array<Vec3, 3> v, Vec3 color) {
-        std::sort(v.begin(), v.end(), [](Vec3 a, Vec3 b) {
+    Vec3 Renderer::_shade(std::array<Vec3, 3> face, Vec3 color, int shininess) {
+        // Calculate the normal of the face for shading
+        Vec3 face_normal = cross(face[1] - face[0], face[2] - face[0]).normalized();
+
+        // Don't rendering the back of the face
+        Vec3 op = (face[0] - this->_scene.camera.position).normalized();
+        if (dot(face_normal, op) > 0) return Vec3(-1, -1, -1);
+
+        // Ambient shading
+        Vec3 draw_color = this->_scene.ambient_light * color;
+
+        // Diffuse shading
+        Vec3 light = -this->_scene.light_direction;
+        float nl = dot(face_normal, light);
+        float brightness = fmax(0, nl);
+        draw_color = brightness * color + (1 - brightness) * draw_color;
+
+        // Specular shading
+        Vec3 reflection = 2 * nl * face_normal - light;
+        float prod = dot(-this->_scene.camera.normal(), reflection);
+        float luminance = pow(fmax(0, prod), shininess);
+        draw_color = luminance * Vec3(1, 1, 1) + (1 - luminance) * draw_color;
+
+        return draw_color;
+    }
+
+    void Renderer::_scanline(std::array<Vec3, 3> f, Vec3 color) {
+        std::sort(f.begin(), f.end(), [](Vec3 a, Vec3 b) {
             return a.y < b.y;
         }); // Sort the three v of a triangle by their y-value
 
         // Calculate the inverse slope of the three sides
-        Vec3 dab = (v[1] - v[0]) / (v[1].y - v[0].y);
-        Vec3 dac = (v[2] - v[0]) / (v[2].y - v[0].y);
-        Vec3 dbc = (v[2] - v[1]) / (v[2].y - v[1].y);
+        Vec3 dab = (f[1] - f[0]) / (f[1].y - f[0].y);
+        Vec3 dac = (f[2] - f[0]) / (f[2].y - f[0].y);
+        Vec3 dbc = (f[2] - f[1]) / (f[2].y - f[1].y);
 
-        bool flat_top = v[1].y == v[0].y;
+        bool flat_top = f[1].y == f[0].y;
 
-        Vec3 vs[] = {flat_top ? v[1] : v[0], v[0]};
-        for (int y=v[0].y; y<v[2].y; y++) {
+        Vec3 vs[] = {flat_top ? f[1] : f[0], f[0]};
+        for (int y=f[0].y; y<f[2].y; y++) {
             int x0 = round(vs[0].x);
             int x1 = round(vs[1].x);
             float z = vs[0].z;
@@ -120,7 +135,7 @@ namespace proxima {
                 }
                 z += dz;
             }
-            vs[0] += y < v[1].y ? dab : dbc;
+            vs[0] += y < f[1].y ? dab : dbc;
             vs[1] += dac;
         }
     }

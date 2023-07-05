@@ -16,9 +16,10 @@ namespace proxima {
         Vec3 position;
         Vec3 euler_angles;
         Vec3 color;
+        int shininess;
         std::vector<Vec3> &vertices() { return this->_vertices; }
         std::vector<std::array<int, 3>> &face_indices() { return this->_face_indices; }
-        Object(Vec3 pos=Vec3(), Vec3 eulers=Vec3(), Vec3 color=Vec3(1, 1, 1));
+        Object(Vec3 pos=Vec3(), Vec3 eulers=Vec3(), Vec3 color=Vec3(1, 1, 1), int shininess=10);
         Object(std::string filename);
     };
 
@@ -39,6 +40,7 @@ namespace proxima {
             float height=1,
             float depth=1,
             Vec3 color=Vec3(1, 1, 1),
+            int shininess=10,
             Vec3 pos=Vec3(),
             Vec3 eulers=Vec3()
         );
@@ -57,6 +59,7 @@ namespace proxima {
             float radius=1,
             int resolution=12,
             Vec3 color=Vec3(1, 1, 1),
+            int shininess=10,
             Vec3 pos=Vec3(),
             Vec3 eulers=Vec3()
         );
