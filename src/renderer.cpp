@@ -68,8 +68,8 @@ namespace proxima {
         Vec3 op_on_plane = p_on_plane - o_on_plane;
 
         // Find the 2d coordinates of op on the plane with x and y base vectors
-        float x_coor = dot(op_on_plane, this->_base_x) / this->_base_x.magnitude() / this->_base_x.magnitude();
-        float y_coor = dot(op_on_plane, this->_base_y) / this->_base_y.magnitude() / this->_base_y.magnitude();
+        float x_coor = dot(op_on_plane, this->_base_x) / pow(this->_base_x.magnitude(), 2);
+        float y_coor = dot(op_on_plane, this->_base_y) / pow(this->_base_y.magnitude(), 2);
         x_coor += this->_width / 2.0;
         y_coor = -y_coor + this->_height / 2.0;
 
