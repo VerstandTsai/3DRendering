@@ -37,8 +37,8 @@ namespace proxima {
 
     float dot(Vec3 a, Vec3 b);
     Vec3 cross(Vec3 a, Vec3 b);
-
     Vec3 rotate(Vec3 v, Vec3 eulers);
+    Vec3 lerp(Vec3 a, Vec3 b, float t);
 }
 
 #endif // VEC_H

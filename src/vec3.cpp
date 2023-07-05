@@ -98,6 +98,10 @@ namespace proxima {
         return v;
     }
 
+    Vec3 lerp(Vec3 a, Vec3 b, float t) {
+        return (1 - t) * a + t * b;
+    }
+
     Vec3 operator*(Matrix3x3 a, const Vec3 &v) {
         float x = dot(a.rows[0], v);
         float y = dot(a.rows[1], v);

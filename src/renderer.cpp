@@ -91,13 +91,13 @@ namespace proxima {
         Vec3 light = -this->_scene.light_direction;
         float nl = dot(face_normal, light);
         float brightness = fmax(0, nl);
-        draw_color = brightness * color + (1 - brightness) * draw_color;
+        draw_color = lerp(draw_color, color, brightness);
 
         // Specular shading
         Vec3 reflection = 2 * nl * face_normal - light;
         float prod = dot(-this->_scene.camera.normal(), reflection);
         float luminance = pow(fmax(0, prod), shininess);
-        draw_color = luminance * Vec3(1, 1, 1) + (1 - luminance) * draw_color;
+        draw_color = lerp(draw_color, Vec3(1, 1, 1), luminance);
 
         return draw_color;
     }
