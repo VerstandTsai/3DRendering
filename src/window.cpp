@@ -14,6 +14,13 @@ namespace proxima {
             _sdl_inited = true;
         }
         SDL_CreateWindowAndRenderer(width, height, SDL_WINDOW_SHOWN, &this->_window, &this->_renderer);
+        this->_buffer = SDL_CreateTexture(
+            this->_renderer,
+            SDL_PIXELFORMAT_RGBA8888,
+            SDL_TEXTUREACCESS_STREAMING,
+            width,
+            height
+        );
     }
 
     Window::~Window() {
@@ -54,14 +61,14 @@ namespace proxima {
         return false;
     }
 
-    void Window::draw(const ScreenBuffer &buffer) {
-        for (int i=0; i<this->_height; i++) {
-            for (int j=0; j<this->_width; j++) {
-                Vec3 c = buffer.pixel(j, i) * 255;
-                SDL_SetRenderDrawColor(this->_renderer, c.x, c.y, c.z, SDL_ALPHA_OPAQUE);
-                SDL_RenderDrawPoint(this->_renderer, j, i);
-            }
-        }
+    void Window::draw(int *buf_rgba) {
+        void *pixels;
+        int pitch;
+        SDL_LockTexture(this->_buffer, NULL, &pixels, &pitch);
+        memcpy(pixels, buf_rgba, this->_width * this->_height * sizeof(int));
+        SDL_UnlockTexture(this->_buffer);
+        SDL_RenderClear(this->_renderer);
+        SDL_RenderCopy(this->_renderer, this->_buffer, NULL, NULL);
         SDL_RenderPresent(this->_renderer);
     }
 }

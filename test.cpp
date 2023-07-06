@@ -1,6 +1,8 @@
 #include "proxima.h"
+#include <chrono>
 
 using namespace proxima;
+using namespace std::chrono;
 
 int main() {
     int width = 1280;
@@ -51,7 +53,12 @@ int main() {
         scene["cuboid"].euler_angles += Vec3(5, 4, 3);
         scene["sphere"].euler_angles += Vec3(0, 5, 0);
         scene["teapot"].euler_angles += Vec3(3, 5, 4);
+
+        auto start = high_resolution_clock::now();
         window.draw(renderer.render(scene));
+        auto end = high_resolution_clock::now();
+        auto dur = duration_cast<milliseconds>(end - start);
+        std::cout << "\rFPS: " << 1000 / dur.count() << std::flush;
     }
 
     return 0;

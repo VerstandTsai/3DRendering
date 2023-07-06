@@ -23,6 +23,7 @@ namespace proxima {
         int _height;
         SDL_Window *_window;
         SDL_Renderer *_renderer;
+        SDL_Texture *_buffer;
         std::map<int, bool> _keyboard;
         int _mouse_dx;
         int _mouse_dy;
@@ -34,7 +35,7 @@ namespace proxima {
         bool keydown(KeyCode code);
         int mouse_dx() { return this->_mouse_dx; }
         int mouse_dy() { return this->_mouse_dy; }
-        void draw(const ScreenBuffer &buffer);
+        void draw(int *buf_rgba);
     };
 }
 

@@ -130,7 +130,7 @@ namespace proxima {
                     y >= 0 && y < this->_height &&
                     z < this->_z_buffer.pixel(x, y)
                 ) {
-                    this->_scr_buffer.set_pixel(x, y, color);
+                    this->_scr_buffer.set_pixel(x, y, color2rgba(color));
                     this->_z_buffer.set_pixel(x, y, z);
                 }
                 z += dz;
@@ -140,15 +140,15 @@ namespace proxima {
         }
     }
 
-    ScreenBuffer &Renderer::render(Scene &scene) {
-        this->_scr_buffer.fill(scene.bg_color);
+    int *Renderer::render(Scene &scene) {
+        this->_scr_buffer.fill(color2rgba(scene.bg_color));
         this->_z_buffer.fill(std::numeric_limits<float>::infinity());
         this->_scene = scene;
         this->_calc_base_xy();
         for (auto &obj_entry : scene.objects()) {
             this->_render_object(obj_entry.second);
         }
-        return this->_scr_buffer;
+        return this->_scr_buffer.pixels();
     }
 }
 

@@ -12,8 +12,8 @@ namespace proxima {
     private:
         int _width;
         int _height;
-        ScreenBuffer _scr_buffer;
-        ZBuffer _z_buffer;
+        Buffer<int> _scr_buffer;
+        Buffer<float> _z_buffer;
         float _d; // The near clipping plane distance
         Scene _dummy;
         Scene &_scene;
@@ -27,7 +27,7 @@ namespace proxima {
 
     public:
         Renderer(int width, int height);
-        ScreenBuffer &render(Scene &scene);
+        int *render(Scene &scene);
     };
 }
 
