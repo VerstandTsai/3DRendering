@@ -5,7 +5,6 @@
 #include <array>
 #include <algorithm>
 #include <cmath>
-#include <limits>
 #include <vector>
 
 namespace proxima {
@@ -71,7 +70,7 @@ namespace proxima {
         // and let the center of the plane be the origin
         Vec3 op = p - this->_scene.camera.position;
         if (dot(op, this->_scene.camera.normal()) / this->_scene.camera.normal().magnitude() < this->_d)
-            return Vec3(-1, -1, std::numeric_limits<float>::infinity());
+            return Vec3(-1, -1, INFINITY);
         Vec3 p_on_plane = this->_d * op / dot(this->_scene.camera.normal(), op);
         Vec3 o_on_plane = this->_d * this->_scene.camera.normal();
         Vec3 op_on_plane = p_on_plane - o_on_plane;
@@ -153,7 +152,7 @@ namespace proxima {
     int *Renderer::render(Scene &scene) {
         for (int i=0; i<this->_num_pixels; i++) {
             this->_scr_buffer[i] = color2rgba(scene.bg_color);
-            this->_z_buffer[i] = std::numeric_limits<float>::infinity();
+            this->_z_buffer[i] = INFINITY;
         }
         this->_scene = scene;
         this->_calc_base_xy();
