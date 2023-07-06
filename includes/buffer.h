@@ -2,7 +2,6 @@
 #define BUFFER_H
 
 #include "vec3.h"
-#include <vector>
 
 namespace proxima {
     template<class T>

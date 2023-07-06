@@ -1,9 +1,6 @@
 #include "buffer.h"
 #include "vec3.h"
 
-#include <vector>
-#include <array>
-
 namespace proxima {
     template<class T>
     Buffer<T>::Buffer(int width, int height) {

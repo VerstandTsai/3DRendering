@@ -2,8 +2,6 @@
 #define WINDOW_H
 
 #include <SDL2/SDL.h>
-#include "buffer.h"
-
 #include <map>
 
 namespace proxima {
