@@ -3,7 +3,6 @@
 
 #include "vec3.h"
 #include "objects.h"
-#include "buffer.h"
 #include "scene.h"
 #include <array>
 
@@ -12,8 +11,9 @@ namespace proxima {
     private:
         int _width;
         int _height;
-        Buffer<int> _scr_buffer;
-        Buffer<float> _z_buffer;
+        int _num_pixels;
+        int *_scr_buffer;
+        float *_z_buffer;
         float _d; // The near clipping plane distance
         Scene _dummy;
         Scene &_scene;
@@ -27,6 +27,7 @@ namespace proxima {
 
     public:
         Renderer(int width, int height);
+        ~Renderer();
         int *render(Scene &scene);
     };
 }

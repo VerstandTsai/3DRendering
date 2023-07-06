@@ -1,5 +1,4 @@
 #include "renderer.h"
-#include "buffer.h"
 #include "objects.h"
 #include "scene.h"
 #include "vec3.h"
@@ -10,14 +9,24 @@
 #include <vector>
 
 namespace proxima {
-    Renderer::Renderer(int width, int height) :
-        _width(width),
-        _height(height),
-        _scr_buffer(width, height),
-        _z_buffer(width, height),
-        _d(0.1),
-        _dummy(),
-        _scene(this->_dummy) {}
+    int color2rgba(Vec3 color) {
+        Vec3 c = color * 255;
+        return ((int)c.x << 24) + ((int)c.y << 16) + ((int)c.z << 8) + 0xff;
+    }
+
+    Renderer::Renderer(int width, int height) : _scene(this->_dummy) {
+        this->_width = width;
+        this->_height = height;
+        this->_num_pixels = width * height;
+        this->_d = 0.1;
+        this->_scr_buffer = new int[this->_num_pixels];
+        this->_z_buffer = new float[this->_num_pixels];
+    }
+
+    Renderer::~Renderer() {
+        delete [] this->_scr_buffer;
+        delete [] this->_z_buffer;
+    }
 
     void Renderer::_calc_base_xy() {
         // Find the normalized x and y vector on the plane
@@ -125,13 +134,14 @@ namespace proxima {
                 z = vs[1].z;
             }
             for (int x=x0; x<x1; x++) {
+                int index = x + y * this->_width;
                 if (
                     x >= 0 && x < this->_width &&
                     y >= 0 && y < this->_height &&
-                    z < this->_z_buffer.pixel(x, y)
+                    z < this->_z_buffer[index]
                 ) {
-                    this->_scr_buffer.set_pixel(x, y, color2rgba(color));
-                    this->_z_buffer.set_pixel(x, y, z);
+                    this->_scr_buffer[index] = color2rgba(color);
+                    this->_z_buffer[index] = z;
                 }
                 z += dz;
             }
@@ -141,14 +151,16 @@ namespace proxima {
     }
 
     int *Renderer::render(Scene &scene) {
-        this->_scr_buffer.fill(color2rgba(scene.bg_color));
-        this->_z_buffer.fill(std::numeric_limits<float>::infinity());
+        for (int i=0; i<this->_num_pixels; i++) {
+            this->_scr_buffer[i] = color2rgba(scene.bg_color);
+            this->_z_buffer[i] = std::numeric_limits<float>::infinity();
+        }
         this->_scene = scene;
         this->_calc_base_xy();
         for (auto &obj_entry : scene.objects()) {
             this->_render_object(obj_entry.second);
         }
-        return this->_scr_buffer.pixels();
+        return this->_scr_buffer;
     }
 }
 

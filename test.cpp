@@ -5,8 +5,8 @@ using namespace proxima;
 using namespace std::chrono;
 
 int main() {
-    int width = 1600;
-    int height = 900;
+    int width = 1280;
+    int height = 720;
     Window window(width, height);
     Renderer renderer(width, height);
     Scene scene(Vec3(0.5, 0.8, 1));
