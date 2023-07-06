@@ -89,8 +89,8 @@ namespace proxima {
         Vec3 face_normal = cross(face[1] - face[0], face[2] - face[0]).normalized();
 
         // Don't rendering the back of the face
-        Vec3 op = (face[0] - this->_scene.camera.position).normalized();
-        if (dot(face_normal, op) > 0) return Vec3(-1, -1, -1);
+        Vec3 cam = (this->_scene.camera.position - (face[0] + face[1] + face[2]) / 3).normalized();
+        if (dot(face_normal, cam) < 0) return Vec3(-1, -1, -1);
 
         // Ambient shading
         Vec3 draw_color = this->_scene.ambient_light * color;
@@ -103,8 +103,8 @@ namespace proxima {
 
         // Specular shading
         Vec3 reflection = 2 * nl * face_normal - light;
-        float prod = dot(-op, reflection);
-        float luminance = pow(fmax(0, prod), shininess);
+        float prod = dot(cam, reflection);
+        float luminance = pow(fmax(0, prod), shininess) * (1 - 1.0 / shininess);
         draw_color = lerp(draw_color, Vec3(1, 1, 1), luminance);
 
         return draw_color;
