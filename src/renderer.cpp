@@ -103,7 +103,7 @@ namespace proxima {
 
         // Specular shading
         Vec3 reflection = 2 * nl * face_normal - light;
-        float prod = dot(-this->_scene.camera.normal(), reflection);
+        float prod = dot(-op, reflection);
         float luminance = pow(fmax(0, prod), shininess);
         draw_color = lerp(draw_color, Vec3(1, 1, 1), luminance);
 
@@ -115,37 +115,29 @@ namespace proxima {
             return a.y < b.y;
         }); // Sort the three v of a triangle by their y-value
 
-        // Calculate the inverse slope of the three sides
-        Vec3 dab = (f[1] - f[0]) / (f[1].y - f[0].y);
-        Vec3 dac = (f[2] - f[0]) / (f[2].y - f[0].y);
-        Vec3 dbc = (f[2] - f[1]) / (f[2].y - f[1].y);
-
-        bool flat_top = f[1].y == f[0].y;
-
-        Vec3 vs[] = {flat_top ? f[1] : f[0], f[0]};
-        for (int y=f[0].y; y<f[2].y; y++) {
-            int x0 = round(vs[0].x);
-            int x1 = round(vs[1].x);
-            float z = vs[0].z;
-            float dz = (vs[1].z - vs[0].z) / (x1 - x0);
-            if (x0 > x1) {
-                std::swap(x0, x1);
-                z = vs[1].z;
+        for (int y=fmax(0, f[0].y); y<fmin(this->_height, f[2].y); y++) {
+            float tac = (y - f[0].y) / (f[2].y - f[0].y);
+            Vec3 xzac = lerp(f[0], f[2], tac);
+            Vec3 xzb;
+            if (y < f[1].y) {
+                float tab = (y - f[0].y) / (f[1].y - f[0].y);
+                xzb = lerp(f[0], f[1], tab);
+            } else {
+                float tbc = (y - f[1].y) / (f[2].y - f[1].y);
+                xzb = lerp(f[1], f[2], tbc);
             }
-            for (int x=x0; x<x1; x++) {
+            if (xzb.x < xzac.x) std::swap(xzac, xzb);
+            int x0 = xzac.x;
+            int x1 = xzb.x;
+            for (int x=fmax(0, x0); x<fmin(this->_width, x1); x++) {
+                float tz = (float)(x - x0) / (x1 - x0);
+                float z = lerp(xzac, xzb, tz).z;
                 int index = x + y * this->_width;
-                if (
-                    x >= 0 && x < this->_width &&
-                    y >= 0 && y < this->_height &&
-                    z < this->_z_buffer[index]
-                ) {
+                if (z < this->_z_buffer[index]) {
                     this->_scr_buffer[index] = color2rgba(color);
                     this->_z_buffer[index] = z;
                 }
-                z += dz;
             }
-            vs[0] += y < f[1].y ? dab : dbc;
-            vs[1] += dac;
         }
     }
 
