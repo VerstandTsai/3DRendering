@@ -15,8 +15,7 @@ namespace proxima {
         int *_scr_buffer;
         float *_z_buffer;
         float _d; // The near clipping plane distance
-        Scene _dummy;
-        Scene &_scene;
+        Scene *_scene;
         std::vector<PointLight*> _light_sources;
         Vec3 _base_x;
         Vec3 _base_y;

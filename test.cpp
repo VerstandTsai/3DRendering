@@ -12,9 +12,10 @@ int main() {
     Scene scene(Vec3(0.5, 0.8, 1));
 
     scene.camera.position = Vec3(0, 0, 8);
-    scene["light1"] = new PointLight(20, Vec3(1, 0, 0), Vec3(0, 5, 0));
-    scene["light2"] = new PointLight(20, Vec3(0, 1, 0), Vec3(0, 6, 0));
-    scene["light3"] = new PointLight(20, Vec3(0, 0, 1), Vec3(0, 7, 0));
+    scene["sun"] = new PointLight(10000, Vec3(1, 1, 1), Vec3(0, 100, 0));
+    scene["light1"] = new PointLight(10, Vec3(1, 0, 0), Vec3(0, 5, 0));
+    scene["light2"] = new PointLight(10, Vec3(0, 1, 0), Vec3(6, 0, 0));
+    scene["light3"] = new PointLight(10, Vec3(0, 0, 1), Vec3(0, 7, 0));
 
     scene["monkey"] = new Object("suzanne.obj");
     scene["monkey"]->position = Vec3(-5, 0, 0);
@@ -50,6 +51,10 @@ int main() {
             scene.camera.position -= Vec3(0, 1, 0);
 
         scene.camera.euler_angles -= Vec3(window.mouse_dy(), window.mouse_dx(), 0);
+
+        scene["light1"]->position = rotate(scene["light1"]->position, Vec3(1, 0, 0));
+        scene["light2"]->position = rotate(scene["light2"]->position, Vec3(0, 1, 0));
+        scene["light3"]->position = rotate(scene["light3"]->position, Vec3(0, 0, 1));
 
         scene["monkey"]->euler_angles += Vec3(3, 4, 5);
         scene["cuboid"]->euler_angles += Vec3(5, 4, 3);

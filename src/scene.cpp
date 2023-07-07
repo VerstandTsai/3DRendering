@@ -1,7 +1,7 @@
 #include "scene.h"
 
 namespace proxima {
-    Scene::Scene(Vec3 bg_color, Vec3 light_direction, float ambient_light) {
+    Scene::Scene(Vec3 bg_color, float ambient_light) {
         this->bg_color = bg_color;
         this->ambient_light = ambient_light;
     }
