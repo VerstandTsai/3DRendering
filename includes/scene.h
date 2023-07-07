@@ -17,6 +17,7 @@ namespace proxima {
         Vec3 bg_color;
         float ambient_light;
         Scene(Vec3 bg_color=Vec3(), Vec3 light_direction=Vec3(0, -1, 0), float ambient_light=0.1);
+        ~Scene();
         std::map<std::string, Object*> objects() { return this->_objects; }
         Object *&operator[](std::string obj_name);
     };

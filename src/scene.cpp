@@ -6,6 +6,12 @@ namespace proxima {
         this->ambient_light = ambient_light;
     }
 
+    Scene::~Scene() {
+        for (auto &entry : this->_objects) {
+            delete entry.second;
+        }
+    }
+
     Object *&Scene::operator[](std::string obj_name) {
         return this->_objects[obj_name];
     }
