@@ -6,11 +6,12 @@
 #include <string>
 
 namespace proxima {
-    Object::Object(Vec3 pos, Vec3 eulers, Vec3 color, int shininess) {
+    Object::Object(Vec3 pos, Vec3 eulers, Vec3 color, int shininess, bool is_light) {
         this->position = pos;
         this->euler_angles = eulers;
         this->color = color;
         this->shininess = shininess;
+        this->_is_light = is_light;
     }
 
     Object::Object(std::string filename) : Object() {
@@ -39,6 +40,12 @@ namespace proxima {
 
     Vec3 Camera::normal() {
         return rotate(Vec3(0, 0, -1), this->euler_angles);
+    }
+
+    PointLight::PointLight(float intensity, Vec3 color, Vec3 pos)
+        : Cube(0.1, 0.1, 0.1, color, 1, pos, Vec3()) {
+        this->_is_light = true;
+        this->intensity = intensity;
     }
 
     Cube::Cube(float width, float height, float depth, Vec3 color, int shininess, Vec3 pos, Vec3 eulers)

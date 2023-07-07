@@ -9,8 +9,10 @@
 
 namespace proxima {
     int color2rgba(Vec3 color) {
-        Vec3 c = color * 255;
-        return ((int)c.x << 24) + ((int)c.y << 16) + ((int)c.z << 8) + 0xff;
+        int r = fmin(1, color.x) * 255;
+        int g = fmin(1, color.y) * 255;
+        int b = fmin(1, color.z) * 255;
+        return (r << 24) + (g << 16) + (b << 8) + 0xff;
     }
 
     Renderer::Renderer(int width, int height) : _scene(this->_dummy) {
@@ -59,6 +61,10 @@ namespace proxima {
                 proj_v[i] = projected_vertices[face_index[i]];
             }
 
+            if (obj.is_light()) {
+                this->_scanline(proj_v, obj.color);
+                continue;
+            }
             Vec3 color = this->_shade(abs_v, obj.color, obj.shininess);
             if (color.x < 0) continue;
             this->_scanline(proj_v, color);
@@ -85,29 +91,38 @@ namespace proxima {
     }
 
     Vec3 Renderer::_shade(std::array<Vec3, 3> face, Vec3 color, int shininess) {
+        // Calculate the centroid of the face
+        Vec3 face_pos = (face[0] + face[1] + face[2]) / 3;
+
         // Calculate the normal of the face for shading
-        Vec3 face_normal = cross(face[1] - face[0], face[2] - face[0]).normalized();
+        Vec3 normal = cross(face[1] - face[0], face[2] - face[0]).normalized();
 
         // Don't rendering the back of the face
-        Vec3 cam = (this->_scene.camera.position - (face[0] + face[1] + face[2]) / 3).normalized();
-        if (dot(face_normal, cam) < 0) return Vec3(-1, -1, -1);
+        Vec3 vision = (this->_scene.camera.position - face_pos).normalized();
+        if (dot(normal, vision) < 0) return Vec3(-1, -1, -1);
 
-        // Ambient shading
-        Vec3 draw_color = this->_scene.ambient_light * color;
+        // Ambient reflection
+        Vec3 ambient = this->_scene.ambient_light * color;
+        Vec3 diffuse = Vec3(0, 0, 0);
+        Vec3 specular = Vec3(0, 0, 0);
 
-        // Diffuse shading
-        Vec3 light = -this->_scene.light_direction;
-        float nl = dot(face_normal, light);
-        float brightness = fmax(0, nl);
-        draw_color = lerp(draw_color, color, brightness);
+        for (auto light_source : this->_light_sources) {
+            Vec3 face_to_light = light_source->position - face_pos;
+            Vec3 light = face_to_light.normalized();
+            float distance = face_to_light.magnitude();
+            float luminance = ((PointLight*)light_source)->intensity / pow(distance, 2);
 
-        // Specular shading
-        Vec3 reflection = 2 * nl * face_normal - light;
-        float prod = dot(cam, reflection);
-        float luminance = pow(fmax(0, prod), shininess) * (1 - 1.0 / shininess);
-        draw_color = lerp(draw_color, Vec3(1, 1, 1), luminance);
+            // Diffuse reflection
+            float ln = dot(light, normal);
+            diffuse += fmax(0, ln) * color * light_source->color * luminance;
 
-        return draw_color;
+            // Specular reflection
+            Vec3 reflection = 2 * ln * normal - light;
+            float rv = dot(reflection, vision);
+            specular += pow(fmax(0, rv), shininess) * light_source->color * luminance;
+        }
+
+        return ambient + diffuse + specular;
     }
 
     void Renderer::_scanline(std::array<Vec3, 3> f, Vec3 color) {
@@ -142,14 +157,19 @@ namespace proxima {
     }
 
     int *Renderer::render(Scene &scene) {
+        this->_scene = scene;
+        this->_light_sources.clear();
+        for (auto &obj_entry : scene.objects()) {
+            if (obj_entry.second->is_light())
+                this->_light_sources.push_back((PointLight*)(obj_entry.second));
+        }
         for (int i=0; i<this->_num_pixels; i++) {
             this->_scr_buffer[i] = color2rgba(scene.bg_color);
             this->_z_buffer[i] = INFINITY;
         }
-        this->_scene = scene;
         this->_calc_base_xy();
         for (auto &obj_entry : scene.objects()) {
-            this->_render_object(obj_entry.second);
+            this->_render_object(*obj_entry.second);
         }
         return this->_scr_buffer;
     }

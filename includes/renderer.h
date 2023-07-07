@@ -17,6 +17,7 @@ namespace proxima {
         float _d; // The near clipping plane distance
         Scene _dummy;
         Scene &_scene;
+        std::vector<PointLight*> _light_sources;
         Vec3 _base_x;
         Vec3 _base_y;
         void _calc_base_xy();

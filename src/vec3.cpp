@@ -42,6 +42,13 @@ namespace proxima {
         return *this;
     }
 
+    Vec3 &Vec3::operator*=(const Vec3 &v) {
+        this->x *= v.x;
+        this->y *= v.y;
+        this->z *= v.z;
+        return *this;
+    }
+
     Vec3 &Vec3::operator/=(float a) {
         this->x /= a;
         this->y /= a;
@@ -66,6 +73,11 @@ namespace proxima {
 
     Vec3 operator*(float a, const Vec3 &v) {
         return v * a;
+    }
+
+    Vec3 operator*(Vec3 a, const Vec3 &b) {
+        a *= b;
+        return a;
     }
 
     Vec3 operator/(Vec3 v, float a) {

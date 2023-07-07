@@ -12,23 +12,25 @@ int main() {
     Scene scene(Vec3(0.5, 0.8, 1));
 
     scene.camera.position = Vec3(0, 0, 8);
-    scene.light_direction = rotate(Vec3(1, 0, 0), Vec3(0, 45, -45));
+    scene["light1"] = new PointLight(20, Vec3(1, 0, 0), Vec3(0, 5, 0));
+    scene["light2"] = new PointLight(20, Vec3(0, 1, 0), Vec3(0, 6, 0));
+    scene["light3"] = new PointLight(20, Vec3(0, 0, 1), Vec3(0, 7, 0));
 
-    scene["monkey"] = Object("suzanne.obj");
-    scene["monkey"].position = Vec3(-5, 0, 0);
-    scene["monkey"].color = Vec3(0.2, 0.2, 1);
+    scene["monkey"] = new Object("suzanne.obj");
+    scene["monkey"]->position = Vec3(-5, 0, 0);
+    scene["monkey"]->color = Vec3(0.2, 0.2, 1);
 
-    scene["cuboid"] = Cube();
-    scene["cuboid"].position = Vec3(-2, 0, 0);
-    scene["cuboid"].color = Vec3(1, 1, 0);
+    scene["cuboid"] = new Cube();
+    scene["cuboid"]->position = Vec3(-2, 0, 0);
+    scene["cuboid"]->color = Vec3(1, 1, 0);
 
-    scene["sphere"] = Sphere(1, 100);
-    scene["sphere"].position = Vec3(0, 0, 0);
-    scene["sphere"].color = Vec3(1, 0.2, 0.2);
+    scene["sphere"] = new Sphere(1, 100);
+    scene["sphere"]->position = Vec3(0, 0, 0);
+    scene["sphere"]->color = Vec3(1, 0.2, 0.2);
 
-    scene["teapot"] = Object("teapot.obj");
-    scene["teapot"].position = Vec3(5, 0, 0);
-    scene["teapot"].color = Vec3(1, 0.5, 0.5);
+    scene["teapot"] = new Object("teapot.obj");
+    scene["teapot"]->position = Vec3(5, 0, 0);
+    scene["teapot"]->color = Vec3(1, 0.5, 0.5);
 
     while (!window.closed()) {
         Vec3 right = cross(scene.camera.normal(), Vec3(0, 1, 0)).normalized();
@@ -49,10 +51,10 @@ int main() {
 
         scene.camera.euler_angles -= Vec3(window.mouse_dy(), window.mouse_dx(), 0);
 
-        scene["monkey"].euler_angles += Vec3(3, 4, 5);
-        scene["cuboid"].euler_angles += Vec3(5, 4, 3);
-        scene["sphere"].euler_angles += Vec3(0, 5, 0);
-        scene["teapot"].euler_angles += Vec3(3, 5, 4);
+        scene["monkey"]->euler_angles += Vec3(3, 4, 5);
+        scene["cuboid"]->euler_angles += Vec3(5, 4, 3);
+        scene["sphere"]->euler_angles += Vec3(0, 5, 0);
+        scene["teapot"]->euler_angles += Vec3(3, 5, 4);
 
         auto start = high_resolution_clock::now();
         window.draw(renderer.render(scene));

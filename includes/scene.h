@@ -10,16 +10,15 @@
 namespace proxima {
     class Scene {
     private:
-        std::map<std::string, Object> _objects;
+        std::map<std::string, Object*> _objects;
 
     public:
         Camera camera;
         Vec3 bg_color;
-        Vec3 light_direction;
         float ambient_light;
-        Scene(Vec3 bg_color=Vec3(), Vec3 light_direction=Vec3(0, -1, 0), float ambient_light=0.2);
-        std::map<std::string, Object> objects() { return this->_objects; }
-        Object &operator[](std::string obj_name);
+        Scene(Vec3 bg_color=Vec3(), Vec3 light_direction=Vec3(0, -1, 0), float ambient_light=0.1);
+        std::map<std::string, Object*> objects() { return this->_objects; }
+        Object *&operator[](std::string obj_name);
     };
 }
 

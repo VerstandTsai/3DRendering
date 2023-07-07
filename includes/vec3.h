@@ -13,6 +13,7 @@ namespace proxima {
         Vec3(float x=0, float y=0, float z=0) : x(x), y(y), z(z) {}
         Vec3 &operator+=(const Vec3 &v);
         Vec3 &operator-=(const Vec3 &v);
+        Vec3 &operator*=(const Vec3 &v);
         Vec3 &operator*=(float a);
         Vec3 &operator/=(float a);
         float magnitude();
@@ -29,6 +30,7 @@ namespace proxima {
     Vec3 operator-(Vec3 a, const Vec3 &b);
     Vec3 operator*(Vec3 v, float a);
     Vec3 operator*(float a, const Vec3 &v);
+    Vec3 operator*(Vec3 a, const Vec3 &b);
     Vec3 operator*(Matrix3x3 a, const Vec3 &v);
     Vec3 operator/(Vec3 v, float a);
     Vec3 operator/(float a, const Vec3 &v);

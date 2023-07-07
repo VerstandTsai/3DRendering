@@ -11,15 +11,23 @@ namespace proxima {
     protected:
         std::vector<Vec3> _vertices;
         std::vector<std::array<int, 3>> _face_indices;
+        bool _is_light;
 
     public:
         Vec3 position;
         Vec3 euler_angles;
         Vec3 color;
         int shininess;
+        bool is_light() { return this->_is_light; }
         std::vector<Vec3> &vertices() { return this->_vertices; }
         std::vector<std::array<int, 3>> &face_indices() { return this->_face_indices; }
-        Object(Vec3 pos=Vec3(), Vec3 eulers=Vec3(), Vec3 color=Vec3(1, 1, 1), int shininess=10);
+        Object(
+            Vec3 pos=Vec3(),
+            Vec3 eulers=Vec3(),
+            Vec3 color=Vec3(1, 1, 1),
+            int shininess=10,
+            bool is_light=false
+        );
         Object(std::string filename);
     };
 
@@ -65,6 +73,12 @@ namespace proxima {
         );
         float radius() { return this->_radius; }
         void set_radius(float radius);
+    };
+
+    class PointLight : public Cube {
+    public:
+        float intensity;
+        PointLight(float intensity=20, Vec3 color=Vec3(1, 1, 1), Vec3 pos=Vec3());
     };
 }
 
