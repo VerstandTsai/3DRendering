@@ -102,7 +102,7 @@ namespace proxima {
         if (dot(normal, vision) < 0) return Vec3(-1, -1, -1);
 
         // Ambient reflection
-        Vec3 ambient = this->_scene->ambient_light;
+        Vec3 ambient = this->_scene->ambient_light * Vec3(1, 1, 1);
         Vec3 diffuse = Vec3(0, 0, 0);
         Vec3 specular = Vec3(0, 0, 0);
 
