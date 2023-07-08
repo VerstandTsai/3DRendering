@@ -20,10 +20,20 @@ namespace proxima {
         Vec3 normalized();
     };
 
-    class Matrix3x3 {
+    class Mat4 {
+    private:
+        std::array<std::array<float, 4>, 4> _rows;
+
     public:
-        std::array<Vec3, 3> rows;
-        Matrix3x3(std::array<Vec3, 3> rows);
+        Mat4();
+        Mat4(std::array<std::array<float, 4>, 4> rows);
+        static Mat4 Identity();
+        static Mat4 Translation(Vec3 displacement);
+        static Mat4 Scale(Vec3 factors);
+        static Mat4 RotX(float theta);
+        static Mat4 RotY(float theta);
+        static Mat4 RotZ(float theta);
+        std::array<float, 4> &operator[](int i);
     };
 
     Vec3 operator+(Vec3 a, const Vec3 &b);
@@ -31,7 +41,8 @@ namespace proxima {
     Vec3 operator*(Vec3 v, float a);
     Vec3 operator*(float a, const Vec3 &v);
     Vec3 operator*(Vec3 a, const Vec3 &b);
-    Vec3 operator*(Matrix3x3 a, const Vec3 &v);
+    Vec3 operator*(Mat4 a, const Vec3 &v);
+    Mat4 operator*(Mat4 a, Mat4 b);
     Vec3 operator/(Vec3 v, float a);
     Vec3 operator/(float a, const Vec3 &v);
     Vec3 operator-(const Vec3 &v);

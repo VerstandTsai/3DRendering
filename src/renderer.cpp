@@ -19,7 +19,7 @@ namespace proxima {
         this->_width = width;
         this->_height = height;
         this->_num_pixels = width * height;
-        this->_d = 0.1;
+        this->_aspect = (float)width / height;
         this->_scr_buffer = new int[this->_num_pixels];
         this->_z_buffer = new float[this->_num_pixels];
     }
@@ -29,25 +29,38 @@ namespace proxima {
         delete [] this->_z_buffer;
     }
 
-    void Renderer::_calc_base_xy() {
-        // Find the normalized x and y vector on the plane
-        // Find x first because it is always perpendicular to the world y-axis
-        Vec3 camera_x = cross(this->_scene->camera.normal(), Vec3(0, 1, 0)).normalized();
-        Vec3 camera_y = cross(camera_x, this->_scene->camera.normal()).normalized();
-
-        // Nomarlize x and y proportioanl to the size of the plane
-        float plane_half_width = this->_d * tan(this->_scene->camera.fov / 2);
-        this->_base_x = plane_half_width / (this->_width / 2.0) * camera_x;
-        this->_base_y = _base_x.magnitude() * camera_y;
+    void Renderer::_calc_matrices() {
+        Camera cam = this->_scene->camera;
+        float n = cam.near;
+        float s = 1 / n * tan(deg2rad(cam.fov / 2));
+        float x = deg2rad(cam.euler_angles.x);
+        float y = deg2rad(cam.euler_angles.y);
+        float a = 1 / this->_aspect;
+        Mat4 make_w({{{
+            {1, 0,   0, 0},
+            {0, 1,   0, 0},
+            {0, 0,   1, 0},
+            {0, 0, 1/n, 0}
+        }}});
+        this->_view_matrix =
+            Mat4::Scale(Vec3(1, 1, -1))
+            * Mat4::RotX(-x)
+            * Mat4::RotY(-y)
+            * Mat4::Translation(-cam.position);
+        this->_projection_matrix = Mat4::Scale(Vec3(a*s, s, 1)) * make_w;
     }
 
     void Renderer::_render_object(Object &obj) {
         // Calculate all vertices' absolute coordinates
         // and project them onto the screen
+        float x = deg2rad(obj.euler_angles.x);
+        float y = deg2rad(obj.euler_angles.y);
+        float z = deg2rad(obj.euler_angles.z);
+        Mat4 model_matrix = Mat4::Translation(obj.position) * Mat4::RotY(y) * Mat4::RotX(x) * Mat4::RotZ(z);
         std::vector<Vec3> absolute_vertices;
         std::vector<Vec3> projected_vertices;
         for (Vec3 vertex : obj.vertices()) {
-            Vec3 absolute = rotate(vertex, obj.euler_angles) + obj.position;
+            Vec3 absolute = model_matrix * vertex;
             absolute_vertices.push_back(absolute);
             projected_vertices.push_back(this->_project_point(absolute));
         }
@@ -72,22 +85,14 @@ namespace proxima {
     }
 
     Vec3 Renderer::_project_point(Vec3 p) {
-        // Project p onto the viewing plane
-        // and let the center of the plane be the origin
-        Vec3 op = p - this->_scene->camera.position;
-        if (dot(op, this->_scene->camera.normal()) / this->_scene->camera.normal().magnitude() < this->_d)
+        Vec3 view_space = this->_view_matrix * p;
+        if (view_space.z < this->_scene->camera.near)
             return Vec3(-1, -1, INFINITY);
-        Vec3 p_on_plane = this->_d * op / dot(this->_scene->camera.normal(), op);
-        Vec3 o_on_plane = this->_d * this->_scene->camera.normal();
-        Vec3 op_on_plane = p_on_plane - o_on_plane;
-
-        // Find the 2d coordinates of op on the plane with x and y base vectors
-        float x_coor = dot(op_on_plane, this->_base_x) / pow(this->_base_x.magnitude(), 2);
-        float y_coor = dot(op_on_plane, this->_base_y) / pow(this->_base_y.magnitude(), 2);
-        x_coor += this->_width / 2.0;
-        y_coor = -y_coor + this->_height / 2.0;
-
-        return Vec3(round(x_coor), round(y_coor), op.magnitude());
+        Vec3 clip_space = this->_projection_matrix * view_space;
+        float half_height = this->_height / 2.0;
+        float screen_x = (clip_space.x + 1) * half_height * this->_aspect;
+        float screen_y = (-clip_space.y + 1) * half_height;
+        return Vec3(screen_x, screen_y, view_space.z);
     }
 
     Vec3 Renderer::_shade(std::array<Vec3, 3> face, Vec3 color, int shininess) {
@@ -126,6 +131,11 @@ namespace proxima {
     }
 
     void Renderer::_scanline(std::array<Vec3, 3> f, Vec3 color) {
+        for (Vec3 &v : f) {
+            v.x = round(v.x);
+            v.y = round(v.y);
+        }
+
         std::sort(f.begin(), f.end(), [](Vec3 a, Vec3 b) {
             return a.y < b.y;
         }); // Sort the three v of a triangle by their y-value
@@ -167,7 +177,7 @@ namespace proxima {
             this->_scr_buffer[i] = color2rgba(scene.bg_color);
             this->_z_buffer[i] = INFINITY;
         }
-        this->_calc_base_xy();
+        this->_calc_matrices();
         for (auto &obj_entry : scene.objects()) {
             this->_render_object(*obj_entry.second);
         }
