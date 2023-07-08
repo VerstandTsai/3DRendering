@@ -18,6 +18,39 @@ namespace proxima {
         this->_rows = rows;
     }
 
+    Mat4 Mat4::Identity() {
+        return Mat4({{
+            {1, 0, 0, 0},
+            {0, 1, 0, 0},
+            {0, 0, 1, 0},
+            {0, 0, 0, 1},
+        }});
+    }
+
+    Mat4 Mat4::Translation(Vec3 displacement) {
+        float x = displacement.x;
+        float y = displacement.y;
+        float z = displacement.z;
+        return Mat4({{
+            {1, 0, 0, x},
+            {0, 1, 0, y},
+            {0, 0, 1, z},
+            {0, 0, 0, 1},
+        }});
+    }
+
+    Mat4 Mat4::Scale(Vec3 factors) {
+        float x = factors.x;
+        float y = factors.y;
+        float z = factors.z;
+        return Mat4({{
+            {x, 0, 0, 0},
+            {0, y, 0, 0},
+            {0, 0, z, 0},
+            {0, 0, 0, 1},
+        }});
+    }
+
     Mat4 Mat4::RotX(float theta) {
         float sin0 = sin(theta);
         float cos0 = cos(theta);
@@ -132,9 +165,8 @@ namespace proxima {
     Mat4 operator*(Mat4 a, Mat4 b) {
         Mat4 result;
         for (int i=0; i<4; i++) {
-            for (int j=0; j<4; j++) {
-                result[i][j] = 0;
-                for (int k=0; k<4; k++) {
+            for (int k=0; k<4; k++) {
+                for (int j=0; j<4; j++) {
                     result[i][j] += a[i][k] * b[k][j];
                 }
             }

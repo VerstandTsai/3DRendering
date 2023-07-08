@@ -31,41 +31,36 @@ namespace proxima {
 
     void Renderer::_calc_matrices() {
         Camera cam = this->_scene->camera;
-        Vec3 e = cam.position;
         float n = cam.near;
         float s = 1 / n * tan(deg2rad(cam.fov / 2));
         float x = deg2rad(cam.euler_angles.x);
         float y = deg2rad(cam.euler_angles.y);
         float a = 1 / this->_aspect;
-        Mat4 translate({{
-            {1, 0, 0, -e.x},
-            {0, 1, 0, -e.y},
-            {0, 0, 1, -e.z},
-            {0, 0, 0,    1}
-        }});
         Mat4 make_w({{{
-            {1, 0,    0, 0},
-            {0, 1,    0, 0},
-            {0, 0,    1, 0},
-            {0, 0, -1/n, 0}
+            {1, 0,   0, 0},
+            {0, 1,   0, 0},
+            {0, 0,   1, 0},
+            {0, 0, 1/n, 0}
         }}});
-        Mat4 scale({{{
-            {a*s, 0, 0, 0},
-            {  0, s, 0, 0},
-            {  0, 0, 1, 0},
-            {  0, 0, 0, 1}
-        }}});
-        this->_view_matrix = Mat4::RotX(-x) * Mat4::RotY(-y) * translate;
-        this->_projection_matrix = scale * make_w;
+        this->_view_matrix =
+            Mat4::Scale(Vec3(1, 1, -1))
+            * Mat4::RotX(-x)
+            * Mat4::RotY(-y)
+            * Mat4::Translation(-cam.position);
+        this->_projection_matrix = Mat4::Scale(Vec3(a*s, s, 1)) * make_w;
     }
 
     void Renderer::_render_object(Object &obj) {
         // Calculate all vertices' absolute coordinates
         // and project them onto the screen
+        float x = deg2rad(obj.euler_angles.x);
+        float y = deg2rad(obj.euler_angles.y);
+        float z = deg2rad(obj.euler_angles.z);
+        Mat4 model_matrix = Mat4::Translation(obj.position) * Mat4::RotY(y) * Mat4::RotX(x) * Mat4::RotZ(z);
         std::vector<Vec3> absolute_vertices;
         std::vector<Vec3> projected_vertices;
         for (Vec3 vertex : obj.vertices()) {
-            Vec3 absolute = rotate(vertex, obj.euler_angles) + obj.position;
+            Vec3 absolute = model_matrix * vertex;
             absolute_vertices.push_back(absolute);
             projected_vertices.push_back(this->_project_point(absolute));
         }
@@ -91,13 +86,13 @@ namespace proxima {
 
     Vec3 Renderer::_project_point(Vec3 p) {
         Vec3 view_space = this->_view_matrix * p;
-        if (-view_space.z < this->_scene->camera.near)
+        if (view_space.z < this->_scene->camera.near)
             return Vec3(-1, -1, INFINITY);
         Vec3 clip_space = this->_projection_matrix * view_space;
         float half_height = this->_height / 2.0;
         float screen_x = (clip_space.x + 1) * half_height * this->_aspect;
         float screen_y = (-clip_space.y + 1) * half_height;
-        return Vec3(screen_x, screen_y, -view_space.z);
+        return Vec3(screen_x, screen_y, view_space.z);
     }
 
     Vec3 Renderer::_shade(std::array<Vec3, 3> face, Vec3 color, int shininess) {

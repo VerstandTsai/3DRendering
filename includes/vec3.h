@@ -27,6 +27,9 @@ namespace proxima {
     public:
         Mat4();
         Mat4(std::array<std::array<float, 4>, 4> rows);
+        static Mat4 Identity();
+        static Mat4 Translation(Vec3 displacement);
+        static Mat4 Scale(Vec3 factors);
         static Mat4 RotX(float theta);
         static Mat4 RotY(float theta);
         static Mat4 RotZ(float theta);
