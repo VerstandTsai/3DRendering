@@ -5,7 +5,8 @@ using namespace proxima;
 using namespace std::chrono;
 
 void control(Window &window, Camera &camera) {
-    Vec3 right = cross(camera.normal(), Vec3(0, 1, 0)).normalized();
+    Vec3 cam_normal = rotate(Vec3(0, 0, -1), camera.euler_angles);
+    Vec3 right = cross(cam_normal, Vec3(0, 1, 0)).normalized();
     Vec3 front = cross(Vec3(0, 1, 0), right);
 
     if (window.keydown(W))

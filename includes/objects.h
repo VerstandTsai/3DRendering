@@ -34,8 +34,8 @@ namespace proxima {
     class Camera : public Object {
     public:
         float fov;
-        Camera(float fov=90, Vec3 pos=Vec3(), Vec3 eulers=Vec3());
-        Vec3 normal();
+        float near;
+        Camera(float fov=90, float near=0.1, Vec3 pos=Vec3(), Vec3 eulers=Vec3());
     };
 
     class Cube : public Object {
