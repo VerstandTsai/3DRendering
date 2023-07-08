@@ -32,18 +32,18 @@ namespace proxima {
     void Renderer::_calc_matrices() {
         Camera cam = this->_scene->camera;
         float n = cam.near;
-        float s = 1 / n * tan(deg2rad(cam.fov / 2));
+        float s = 1 / tan(deg2rad(cam.fov / 2));
         float x = deg2rad(cam.euler_angles.x);
         float y = deg2rad(cam.euler_angles.y);
         float a = 1 / this->_aspect;
         Mat4 make_w({{{
-            {1, 0,   0, 0},
-            {0, 1,   0, 0},
-            {0, 0,   1, 0},
-            {0, 0, 1/n, 0}
+            {1, 0, 0, 0},
+            {0, 1, 0, 0},
+            {0, 0, 1, 0},
+            {0, 0, 1, 0}
         }}});
         this->_view_matrix =
-            Mat4::Scale(Vec3(1, 1, -1))
+            Mat4::Scale(Vec3(1, 1, -1) / n)
             * Mat4::RotX(-x)
             * Mat4::RotY(-y)
             * Mat4::Translation(-cam.position);
