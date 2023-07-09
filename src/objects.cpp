@@ -34,9 +34,10 @@ namespace proxima {
         }
     }
 
-    Camera::Camera(float fov, float near, Vec3 pos, Vec3 eulers) : Object(pos, eulers) {
+    Camera::Camera(float fov, float near, float far, Vec3 pos, Vec3 eulers) : Object(pos, eulers) {
         this->fov = fov;
         this->near = near;
+        this->far = far;
     }
 
     PointLight::PointLight(float intensity, Vec3 color, Vec3 pos)

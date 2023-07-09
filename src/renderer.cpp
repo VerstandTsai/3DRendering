@@ -32,22 +32,21 @@ namespace proxima {
     void Renderer::_calc_matrices() {
         Camera cam = this->_scene->camera;
         float n = cam.near;
+        float f = cam.far;
         float s = 1 / tan(deg2rad(cam.fov / 2));
         float x = deg2rad(cam.euler_angles.x);
         float y = deg2rad(cam.euler_angles.y);
         float a = 1 / this->_aspect;
-        Mat4 make_w({{{
-            {1, 0, 0, 0},
-            {0, 1, 0, 0},
-            {0, 0, 1, 0},
-            {0, 0, 1, 0}
-        }}});
         this->_view_matrix =
-            Mat4::Scale(Vec3(1, 1, -1) / n)
-            * Mat4::RotX(-x)
+              Mat4::RotX(-x)
             * Mat4::RotY(-y)
             * Mat4::Translation(-cam.position);
-        this->_projection_matrix = Mat4::Scale(Vec3(a*s, s, 1)) * make_w;
+        this->_projection_matrix = Mat4({{{
+            {a*s, 0,        0,          0},
+            {  0, s,        0,          0},
+            {  0, 0, -f/(f-n), -f*n/(f-n)},
+            {  0, 0,       -1,          0}
+        }}});
     }
 
     void Renderer::_render_object(Object &obj) {
@@ -86,13 +85,13 @@ namespace proxima {
 
     Vec3 Renderer::_project_point(Vec3 p) {
         Vec3 view_space = this->_view_matrix * p;
-        if (view_space.z < this->_scene->camera.near)
-            return Vec3(-1, -1, INFINITY);
         Vec3 clip_space = this->_projection_matrix * view_space;
+        if (clip_space.z < 0 || clip_space.z > 1)
+            return Vec3(-1, -1, 2);
         float half_height = this->_height / 2.0;
         float screen_x = (clip_space.x + 1) * half_height * this->_aspect;
         float screen_y = (-clip_space.y + 1) * half_height;
-        return Vec3(screen_x, screen_y, view_space.z);
+        return Vec3(screen_x, screen_y, clip_space.z);
     }
 
     Vec3 Renderer::_shade(std::array<Vec3, 3> face, Vec3 color, int shininess) {
@@ -175,7 +174,7 @@ namespace proxima {
         }
         for (int i=0; i<this->_num_pixels; i++) {
             this->_scr_buffer[i] = color2rgba(scene.bg_color);
-            this->_z_buffer[i] = INFINITY;
+            this->_z_buffer[i] = 1;
         }
         this->_calc_matrices();
         for (auto &obj_entry : scene.objects()) {
