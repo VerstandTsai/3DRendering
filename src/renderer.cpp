@@ -124,7 +124,7 @@ namespace proxima {
             // Specular reflection
             Vec3 reflection = 2 * ln * normal - light;
             float rv = dot(reflection, vision);
-            specular += pow(fmax(0, rv), shininess) * light_color;
+            specular += pow(fmax(0, rv), shininess) * (-1.0 / shininess + 1) * light_color;
         }
 
         return (ambient + diffuse + specular) * color;
