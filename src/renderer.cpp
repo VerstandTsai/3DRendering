@@ -88,9 +88,10 @@ namespace proxima {
         Vec3 clip_space = this->_projection_matrix * view_space;
         if (clip_space.z < 0 || clip_space.z > 1)
             return Vec3(-1, -1, 2);
-        float half_height = this->_height / 2.0;
-        float screen_x = (clip_space.x + 1) * half_height * this->_aspect;
-        float screen_y = (-clip_space.y + 1) * half_height;
+        int half_width = this->_width >> 1;
+        int half_height = this->_height >> 1;
+        int screen_x = (clip_space.x + 1) * half_width;
+        int screen_y = (-clip_space.y + 1) * half_height;
         return Vec3(screen_x, screen_y, clip_space.z);
     }
 
@@ -131,11 +132,6 @@ namespace proxima {
     }
 
     void Renderer::_scanline(std::array<Vec3, 3> f, Vec3 color) {
-        for (Vec3 &v : f) {
-            v.x = round(v.x);
-            v.y = round(v.y);
-        }
-
         std::sort(f.begin(), f.end(), [](Vec3 a, Vec3 b) {
             return a.y < b.y;
         }); // Sort the three v of a triangle by their y-value
