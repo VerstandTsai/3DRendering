@@ -98,7 +98,7 @@ namespace proxima {
         // Calculate the centroid of the face
         Vec3 face_pos = (face[0] + face[1] + face[2]) / 3;
 
-        // Calculate the normal of the face for shading
+        // Calculate the normal of the face
         Vec3 normal = cross(face[1] - face[0], face[2] - face[0]).normalized();
 
         // Don't rendering the back of the face
@@ -114,16 +114,17 @@ namespace proxima {
             Vec3 face_to_light = light_source->position - face_pos;
             Vec3 light = face_to_light.normalized();
             float distance = face_to_light.magnitude();
-            float luminance = ((PointLight*)light_source)->intensity / pow(distance, 2);
+            float intensity = ((PointLight*)light_source)->intensity;
+            Vec3 light_color = light_source->color * intensity / pow(distance, 2);
 
             // Diffuse reflection
             float ln = dot(light, normal);
-            diffuse += fmax(0, ln) * light_source->color * luminance;
+            diffuse += fmax(0, ln) * light_color;
 
             // Specular reflection
             Vec3 reflection = 2 * ln * normal - light;
             float rv = dot(reflection, vision);
-            specular += pow(fmax(0, rv), shininess) * light_source->color * luminance;
+            specular += pow(fmax(0, rv), shininess) * light_color;
         }
 
         return (ambient + diffuse + specular) * color;
