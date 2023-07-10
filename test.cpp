@@ -40,6 +40,9 @@ int main() {
     scene["light2"] = new PointLight(10, Vec3(0, 1, 0), Vec3(6, 0, 0));
     scene["light3"] = new PointLight(10, Vec3(0, 0, 1), Vec3(0, 7, 0));
 
+    scene["floor"] = new Cube(500, 1, 1000);
+    scene["floor"]->position = Vec3(0, -5, -500);
+
     scene["monkey"] = new Object("suzanne.obj");
     scene["monkey"]->position = Vec3(-5, 0, 0);
     scene["monkey"]->color = Vec3(0.2, 0.2, 1);

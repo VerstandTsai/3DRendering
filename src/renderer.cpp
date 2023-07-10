@@ -85,14 +85,15 @@ namespace proxima {
 
     Vec3 Renderer::_project_point(Vec3 p) {
         Vec3 view_space = this->_view_matrix * p;
-        Vec3 clip_space = this->_projection_matrix * view_space;
-        if (clip_space.z < 0 || clip_space.z > 1)
+        Vec3 ndc_space = this->_projection_matrix * view_space;
+        Vec3 clip_space = ndc_space * -view_space.z;
+        if (clip_space.z < 0)
             return Vec3(-1, -1, 2);
         int half_width = this->_width >> 1;
         int half_height = this->_height >> 1;
-        int screen_x = (clip_space.x + 1) * half_width;
-        int screen_y = (-clip_space.y + 1) * half_height;
-        return Vec3(screen_x, screen_y, clip_space.z);
+        int screen_x = ( ndc_space.x + 1) * half_width;
+        int screen_y = (-ndc_space.y + 1) * half_height;
+        return Vec3(screen_x, screen_y, ndc_space.z);
     }
 
     Vec3 Renderer::_shade(std::array<Vec3, 3> face, Vec3 color, int shininess) {
