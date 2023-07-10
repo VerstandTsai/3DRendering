@@ -55,31 +55,31 @@ namespace proxima {
         float x = deg2rad(obj.euler_angles.x);
         float y = deg2rad(obj.euler_angles.y);
         float z = deg2rad(obj.euler_angles.z);
-        Mat4 model_matrix = Mat4::Translation(obj.position) * Mat4::RotY(y) * Mat4::RotX(x) * Mat4::RotZ(z);
-        std::vector<Vec3> absolute_vertices;
-        std::vector<Vec3> projected_vertices;
+        Mat4 model_matrix =
+              Mat4::Translation(obj.position)
+            * Mat4::RotY(y)
+            * Mat4::RotX(x)
+            * Mat4::RotZ(z);
+        std::vector<Vec3> view_space;
         for (Vec3 vertex : obj.vertices()) {
-            Vec3 absolute = model_matrix * vertex;
-            absolute_vertices.push_back(absolute);
-            projected_vertices.push_back(this->_project_point(absolute));
+            Vec3 view_v = this->_view_matrix * model_matrix * vertex;
+            view_space.push_back(view_v);
         }
 
-        // Scanline each face using the face-vertex indices table
+        // Rebuild the vertex-face table
+        std::vector<Vertex> vertices;
+        std::vector<std::array<int, 3>> face_indices;
+        int index = 0;
         for (std::array<int, 3> face_index : obj.face_indices()) {
-            std::array<Vec3, 3> abs_v;
-            std::array<Vec3, 3> proj_v;
-            for (int i=0; i<3; i++) {
-                abs_v[i] = absolute_vertices[face_index[i]];
-                proj_v[i] = projected_vertices[face_index[i]];
-            }
-
-            if (obj.is_light()) {
-                this->_scanline(proj_v, obj.color);
-                continue;
-            }
-            Vec3 color = this->_shade(abs_v, obj.color, obj.shininess);
-            if (color.x < 0) continue;
-            this->_scanline(proj_v, color);
+            Vec3 a = view_space[face_index[0]];
+            Vec3 b = view_space[face_index[1]];
+            Vec3 c = view_space[face_index[2]];
+            Vec3 normal = cross(b-a, c-a);
+            vertices.push_back(Vertex(a, obj.color, normal));
+            vertices.push_back(Vertex(b, obj.color, normal));
+            vertices.push_back(Vertex(c, obj.color, normal));
+            face_indices.push_back({index, index+1, index+2});
+            index += 3;
         }
     }
 
@@ -170,11 +170,14 @@ namespace proxima {
                 this->_light_sources.push_back((PointLight*)(obj_entry.second));
         }
         for (int i=0; i<this->_num_pixels; i++) {
-            this->_scr_buffer[i] = color2rgba(scene.bg_color);
-            this->_z_buffer[i] = 1;
+            this->_frame_buffer[i] = color2rgba(scene.bg_color);
+            this->_depth_buffer[i] = 1;
         }
         this->_calc_matrices();
-        return this->_scr_buffer;
+        for (auto &obj_entry : this->_scene->objects()) {
+            this->_render_object(*obj_entry.second);
+        }
+        return this->_frame_buffer;
     }
 }
 

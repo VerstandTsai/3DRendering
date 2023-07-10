@@ -34,11 +34,11 @@ namespace proxima {
         std::vector<PointLight*> _light_sources;
         int *_frame_buffer;
         float *_depth_buffer;
-        Fragment *fragment_buffer;
-        std::vector<Vertex> vertices;
+        Fragment *_fragment_buffer;
         Mat4 _view_matrix;
         Mat4 _projection_matrix;
         void _calc_matrices();
+        void _render_object(Object &obj);
 
     public:
         Renderer(int width, int height);
