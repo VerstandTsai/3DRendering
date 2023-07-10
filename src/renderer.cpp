@@ -174,9 +174,6 @@ namespace proxima {
             this->_z_buffer[i] = 1;
         }
         this->_calc_matrices();
-        for (auto &obj_entry : scene.objects()) {
-            this->_render_object(*obj_entry.second);
-        }
         return this->_scr_buffer;
     }
 }
