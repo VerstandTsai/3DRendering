@@ -9,11 +9,15 @@
 namespace proxima {
     class Vertex {
     public:
-        Vec3 position;
-        Vec3 color;
+        Vec4 position;
         Vec3 normal;
-        Vertex(Vec3 position=Vec3(0, 0, 0), Vec3 color=Vec3(1, 1, 1), Vec3 normal=Vec3(0, 0, 1)) :
-            position(position), color(color), normal(normal) {}
+        Vertex(Vec4 position=Vec4(), Vec3 normal=Vec3(0, 0, 1)) : position(position), normal(normal) {}
+    };
+
+    class Face {
+    public:
+        Vertex *a, *b, *c;
+        Face(Vertex *a, Vertex *b, Vertex *c) : a(a), b(b), c(c) {};
     };
 
     class Fragment {

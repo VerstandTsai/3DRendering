@@ -48,7 +48,7 @@ int main() {
     scene["cuboid"]->position = Vec3(-2, 0, 0);
     scene["cuboid"]->color = Vec3(1, 1, 0);
 
-    scene["sphere"] = new Sphere(1, 100);
+    scene["sphere"] = new Sphere(1, 12);
     scene["sphere"]->position = Vec3(0, 0, 0);
     scene["sphere"]->color = Vec3(1, 0.2, 0.2);
 

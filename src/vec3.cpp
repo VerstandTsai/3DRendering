@@ -155,11 +155,11 @@ namespace proxima {
         return a;
     }
 
-    Vec3 operator*(Mat4 a, const Vec3 &v) {
+    Vec4 operator*(Mat4 a, const Vec4 &v) {
         float elements[4];
         for (int i=0; i<4; i++)
-            elements[i] = a[i][0] * v.x + a[i][1] * v.y + a[i][2] * v.z + a[i][3];
-        return Vec3(elements[0], elements[1], elements[2]) / elements[3];
+            elements[i] = a[i][0] * v.x + a[i][1] * v.y + a[i][2] * v.z + a[i][3] * v.w;
+        return Vec4(elements[0], elements[1], elements[2], elements[3]);
     }
 
     Mat4 operator*(Mat4 a, Mat4 b) {

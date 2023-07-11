@@ -15,18 +15,27 @@ namespace proxima {
         return (r << 24) + (g << 16) + (b << 8) + 0xff;
     }
 
+    Vec3 barycentric(Vec3 p, Vec3 a, Vec3 b, Vec3 c) {
+        float abc = cross(b - a, c - a).z;
+        float pbc = cross(b - p, c - p).z;
+        float pca = cross(c - p, a - p).z;
+        float pab = cross(a - p, b - p).z;
+        return Vec3(pbc, pca, pab) / abc;
+    }
+
     Renderer::Renderer(int width, int height) {
         this->_width = width;
         this->_height = height;
         this->_num_pixels = width * height;
         this->_aspect = (float)width / height;
-        this->_scr_buffer = new int[this->_num_pixels];
-        this->_z_buffer = new float[this->_num_pixels];
+        this->_frame_buffer = new int[this->_num_pixels];
+        this->_depth_buffer = new float[this->_num_pixels];
+        this->_fragment_buffer = new Fragment[this->_num_pixels];
     }
 
     Renderer::~Renderer() {
-        delete [] this->_scr_buffer;
-        delete [] this->_z_buffer;
+        delete [] this->_frame_buffer;
+        delete [] this->_depth_buffer;
     }
 
     void Renderer::_calc_matrices() {
@@ -67,22 +76,67 @@ namespace proxima {
         }
 
         // Rebuild the vertex-face table
-        std::vector<Vertex> vertices;
-        std::vector<std::array<int, 3>> face_indices;
-        int index = 0;
+        std::vector<Vertex*> vertices;
+        std::vector<Face> faces;
         for (std::array<int, 3> face_index : obj.face_indices()) {
             Vec3 a = view_space[face_index[0]];
             Vec3 b = view_space[face_index[1]];
             Vec3 c = view_space[face_index[2]];
             Vec3 normal = cross(b-a, c-a);
-            vertices.push_back(Vertex(a, obj.color, normal));
-            vertices.push_back(Vertex(b, obj.color, normal));
-            vertices.push_back(Vertex(c, obj.color, normal));
-            face_indices.push_back({index, index+1, index+2});
-            index += 3;
+            Vertex *va = new Vertex(a, normal);
+            Vertex *vb = new Vertex(b, normal);
+            Vertex *vc = new Vertex(c, normal);
+            vertices.push_back(va);
+            vertices.push_back(vb);
+            vertices.push_back(vc);
+            faces.push_back(Face(va, vb, vc));
+        }
+
+        for (Vertex *v : vertices) {
+            v->position = this->_projection_matrix * v->position;
+        }
+
+        // Clipping
+        faces.erase(std::remove_if(faces.begin(), faces.end(),
+            [](Face face) {
+                return face.a->position.z < 0 || face.b->position.z < 0 || face.c->position.z < 0;
+            }
+        ), faces.end());
+
+        auto it = vertices.begin();
+        while (it != vertices.end()) {
+            if ((*it)->position.z < 0) {
+                delete *it;
+                it = vertices.erase(it);
+            } else it++;
+        }
+
+        // Transform to screen space
+        for (Vertex *v : vertices) {
+            Vec3 ndc_space = v->position;
+            int half_width = this->_width >> 1;
+            int half_height = this->_height >> 1;
+            int screen_x = (ndc_space.x + 1) * half_width;
+            int screen_y = (-ndc_space.y + 1) * half_height;
+            v->position = Vec3(screen_x, screen_y, ndc_space.z);
+            if (screen_x >= 0 && screen_x < this->_width && screen_y >= 0 && screen_y < this->_height) {
+                int index = screen_x + screen_y * this->_width;
+                this->_frame_buffer[index] = color2rgba(obj.color);
+            }
+        }
+
+        // Create the fragments
+        for (Face face : faces) {
+            ;
+        }
+
+        // Clean up
+        for (Vertex *v : vertices) {
+            delete v;
         }
     }
 
+    /*
     Vec3 Renderer::_project_point(Vec3 p) {
         Vec3 view_space = this->_view_matrix * p;
         Vec3 clip_space = this->_projection_matrix * view_space;
@@ -94,7 +148,9 @@ namespace proxima {
         int screen_y = (-clip_space.y + 1) * half_height;
         return Vec3(screen_x, screen_y, clip_space.z);
     }
+    */
 
+    /*
     Vec3 Renderer::_shade(std::array<Vec3, 3> face, Vec3 color, int shininess) {
         // Calculate the centroid of the face
         Vec3 face_pos = (face[0] + face[1] + face[2]) / 3;
@@ -130,7 +186,9 @@ namespace proxima {
 
         return (ambient + diffuse + specular) * color;
     }
+    */
 
+    /*
     void Renderer::_scanline(std::array<Vec3, 3> f, Vec3 color) {
         std::sort(f.begin(), f.end(), [](Vec3 a, Vec3 b) {
             return a.y < b.y;
@@ -161,6 +219,7 @@ namespace proxima {
             }
         }
     }
+    */
 
     int *Renderer::render(Scene &scene) {
         this->_scene = &scene;
