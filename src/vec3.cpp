@@ -204,8 +204,21 @@ namespace proxima {
         return v;
     }
 
+    float lerp(float a, float b, float t) {
+        return (1 - t) * a + t * b;
+    }
+
     Vec3 lerp(Vec3 a, Vec3 b, float t) {
         return (1 - t) * a + t * b;
+    }
+
+    Vec4 lerp(Vec4 a, Vec4 b, float t) {
+        return Vec4(
+            lerp(a.x, b.x, t),
+            lerp(a.y, b.y, t),
+            lerp(a.z, b.z, t),
+            lerp(a.w, b.w, t)
+        );
     }
 
     Vec3 rotate(Vec3 v, Vec3 eulers) {

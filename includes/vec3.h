@@ -44,6 +44,8 @@ namespace proxima {
         operator Vec3() const { return Vec3(this->x, this->y, this->z) / this->w; }
     };
 
+    Vec4 lerp(Vec4 a, Vec4 b, float t);
+
     class Mat4 {
     private:
         std::array<std::array<float, 4>, 4> _rows;

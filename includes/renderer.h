@@ -16,8 +16,8 @@ namespace proxima {
 
     class Face {
     public:
-        Vertex *a, *b, *c;
-        Face(Vertex *a, Vertex *b, Vertex *c) : a(a), b(b), c(c) {};
+        std::array<Vertex*, 3> vertices;
+        Face(std::array<Vertex*, 3> vertices) : vertices(vertices) {};
     };
 
     class Fragment {

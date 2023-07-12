@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <vector>
+#include <set>
 
 namespace proxima {
     int color2rgba(Vec3 color) {
@@ -89,30 +90,61 @@ namespace proxima {
             vertices.push_back(va);
             vertices.push_back(vb);
             vertices.push_back(vc);
-            faces.push_back(Face(va, vb, vc));
+            faces.push_back(Face({va, vb, vc}));
         }
 
         for (Vertex *v : vertices) {
             v->position = this->_projection_matrix * v->position;
         }
 
-        // Clipping
-        faces.erase(std::remove_if(faces.begin(), faces.end(),
-            [](Face face) {
-                return face.a->position.z < 0 || face.b->position.z < 0 || face.c->position.z < 0;
+        // Clip the faces
+        std::vector<Face> new_faces;
+        std::set<Vertex*> new_vertices;
+        std::set<Vertex*> old_vertices;
+        for (Face face : faces) {
+            std::vector<Vertex*> face_vertices;
+            for (int i=0; i<3; i++) {
+                Vertex *a = face.vertices[i];
+                Vertex *b = face.vertices[(i+1)%3];
+                if (a->position.z > 0 && b->position.z > 0) {
+                    face_vertices.push_back(a);
+                    new_vertices.insert(a);
+                }
+                if (a->position.z > 0 && b->position.z < 0) {
+                    face_vertices.push_back(a);
+                    float t = b->position.z / (b->position.z - a->position.z);
+                    Vec4 new_pos = lerp(b->position, a->position, t);
+                    Vec3 new_normal = lerp(b->normal, a->normal, t);
+                    Vertex *new_vertex = new Vertex(new_pos, new_normal);
+                    face_vertices.push_back(new_vertex);
+                    new_vertices.insert(new_vertex);
+                    new_vertices.insert(a);
+                }
+                if (a->position.z < 0 && b->position.z > 0) {
+                    float t = a->position.z / (a->position.z - b->position.z);
+                    Vec4 new_pos = lerp(a->position, b->position, t);
+                    Vec3 new_normal = lerp(a->normal, b->normal, t);
+                    Vertex *new_vertex = new Vertex(new_pos, new_normal);
+                    face_vertices.push_back(new_vertex);
+                    new_vertices.insert(new_vertex);
+                    old_vertices.insert(a);
+                }
+                if (a->position.z < 0 && b->position.z < 0) {
+                    old_vertices.insert(a);
+                }
             }
-        ), faces.end());
+            if (face_vertices.size() == 0) continue;
+            new_faces.push_back(Face({face_vertices[0], face_vertices[1], face_vertices[2]}));
+            if (face_vertices.size() == 4)
+                new_faces.push_back(Face({face_vertices[3], face_vertices[0], face_vertices[2]}));
+        }
 
-        auto it = vertices.begin();
-        while (it != vertices.end()) {
-            if ((*it)->position.z < 0) {
-                delete *it;
-                it = vertices.erase(it);
-            } else it++;
+        for (Vertex *v : old_vertices) {
+            delete v;
         }
 
         // Transform to screen space
-        for (Vertex *v : vertices) {
+        for (Vertex *v : new_vertices) {
             Vec3 ndc_space = v->position;
             int half_width = this->_width >> 1;
             int half_height = this->_height >> 1;
@@ -126,12 +158,12 @@ namespace proxima {
         }
 
         // Create the fragments
-        for (Face face : faces) {
+        for (Face face : new_faces) {
             ;
         }
 
         // Clean up
-        for (Vertex *v : vertices) {
+        for (Vertex *v : new_vertices) {
             delete v;
         }
     }
