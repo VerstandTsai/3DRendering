@@ -151,15 +151,53 @@ namespace proxima {
             int screen_x = (ndc_space.x + 1) * half_width;
             int screen_y = (-ndc_space.y + 1) * half_height;
             v->position = Vec3(screen_x, screen_y, ndc_space.z);
-            if (screen_x >= 0 && screen_x < this->_width && screen_y >= 0 && screen_y < this->_height) {
-                int index = screen_x + screen_y * this->_width;
-                this->_frame_buffer[index] = color2rgba(obj.color);
-            }
         }
 
         // Create the fragments
         for (Face face : new_faces) {
-            ;
+            int min_x = this->_width;
+            int max_x = 0;
+            int min_y = this->_height;
+            int max_y = 0;
+            for (Vertex *v : face.vertices) {
+                if (v->position.x < min_x)
+                    min_x = v->position.x;
+                if (v->position.x > max_x)
+                    max_x = v->position.x;
+                if (v->position.y < min_y)
+                    min_y = v->position.y;
+                if (v->position.y > max_y)
+                    max_y = v->position.y;
+            }
+            min_x = fmax(0, min_x);
+            min_y = fmax(0, min_y);
+            max_x = fmin(this->_width, max_x);
+            max_y = fmin(this->_height, max_y);
+            for (int y=min_y; y<max_y; y++) {
+                for (int x=min_x; x<max_x; x++) {
+                    Vec3 a = face.vertices[0]->position * Vec3(1, 1, 0);
+                    Vec3 b = face.vertices[1]->position * Vec3(1, 1, 0);
+                    Vec3 c = face.vertices[2]->position * Vec3(1, 1, 0);
+                    Vec3 weights = barycentric(Vec3(x, y, 0), a, b, c);
+                    if (weights.x < 0 || weights.y < 0 || weights.z < 0)
+                        continue;
+
+                    int index = x + y * this->_width;
+                    float z =
+                          weights.x * face.vertices[0]->position.z  
+                        + weights.y * face.vertices[1]->position.z  
+                        + weights.z * face.vertices[2]->position.z; 
+                    if (z > this->_depth_buffer[index]) continue;
+                    this->_depth_buffer[index] = z;
+
+                    Vec3 normal =
+                          weights.x * face.vertices[0]->normal
+                        + weights.y * face.vertices[1]->normal
+                        + weights.z * face.vertices[2]->normal;
+                    this->_fragment_buffer[index].normal = normal;
+                    this->_fragment_buffer[index].color = obj.color;
+                }
+            }
         }
 
         // Clean up
@@ -167,20 +205,6 @@ namespace proxima {
             delete v;
         }
     }
-
-    /*
-    Vec3 Renderer::_project_point(Vec3 p) {
-        Vec3 view_space = this->_view_matrix * p;
-        Vec3 clip_space = this->_projection_matrix * view_space;
-        if (clip_space.z < 0 || clip_space.z > 1)
-            return Vec3(-1, -1, 2);
-        int half_width = this->_width >> 1;
-        int half_height = this->_height >> 1;
-        int screen_x = (clip_space.x + 1) * half_width;
-        int screen_y = (-clip_space.y + 1) * half_height;
-        return Vec3(screen_x, screen_y, clip_space.z);
-    }
-    */
 
     /*
     Vec3 Renderer::_shade(std::array<Vec3, 3> face, Vec3 color, int shininess) {
@@ -261,12 +285,16 @@ namespace proxima {
                 this->_light_sources.push_back((PointLight*)(obj_entry.second));
         }
         for (int i=0; i<this->_num_pixels; i++) {
+            this->_fragment_buffer[i] = Fragment();
             this->_frame_buffer[i] = color2rgba(scene.bg_color);
             this->_depth_buffer[i] = 1;
         }
         this->_calc_matrices();
         for (auto &obj_entry : this->_scene->objects()) {
             this->_render_object(*obj_entry.second);
+        }
+        for (int i=0; i<this->_num_pixels; i++) {
+            this->_frame_buffer[i] = color2rgba(this->_fragment_buffer[i].color);
         }
         return this->_frame_buffer;
     }

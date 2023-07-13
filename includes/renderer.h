@@ -24,7 +24,7 @@ namespace proxima {
     public:
         Vec3 color;
         Vec3 normal;
-        Fragment(Vec3 color=Vec3(1, 1, 1), Vec3 normal=Vec3(0, 0, 1)) :
+        Fragment(Vec3 color=Vec3(), Vec3 normal=Vec3(0, 0, -1)) :
             color(color), normal(normal) {}
     };
 
