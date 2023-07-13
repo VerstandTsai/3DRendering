@@ -42,6 +42,7 @@ namespace proxima {
         Mat4 _view_matrix;
         Mat4 _projection_matrix;
         void _calc_matrices();
+        void _rasterize(Face face, Vec3 color);
         void _render_object(Object &obj);
 
     public:
