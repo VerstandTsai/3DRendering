@@ -106,31 +106,19 @@ namespace proxima {
             for (int i=0; i<3; i++) {
                 Vertex *a = face.vertices[i];
                 Vertex *b = face.vertices[(i+1)%3];
-                if (a->position.z > 0 && b->position.z > 0) {
+                if (a->position.z > 0) {
                     face_vertices.push_back(a);
                     new_vertices.insert(a);
+                } else {
+                    old_vertices.insert(a);
                 }
-                if (a->position.z > 0 && b->position.z < 0) {
-                    face_vertices.push_back(a);
-                    float t = b->position.z / (b->position.z - a->position.z);
-                    Vec4 new_pos = lerp(b->position, a->position, t);
-                    Vec3 new_normal = lerp(b->normal, a->normal, t);
-                    Vertex *new_vertex = new Vertex(new_pos, new_normal);
-                    face_vertices.push_back(new_vertex);
-                    new_vertices.insert(new_vertex);
-                    new_vertices.insert(a);
-                }
-                if (a->position.z < 0 && b->position.z > 0) {
+                if (a->position.z * b->position.z < 0) {
                     float t = a->position.z / (a->position.z - b->position.z);
                     Vec4 new_pos = lerp(a->position, b->position, t);
                     Vec3 new_normal = lerp(a->normal, b->normal, t);
                     Vertex *new_vertex = new Vertex(new_pos, new_normal);
                     face_vertices.push_back(new_vertex);
                     new_vertices.insert(new_vertex);
-                    old_vertices.insert(a);
-                }
-                if (a->position.z < 0 && b->position.z < 0) {
-                    old_vertices.insert(a);
                 }
             }
             if (face_vertices.size() == 0) continue;
