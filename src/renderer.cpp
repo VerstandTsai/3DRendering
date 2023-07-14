@@ -16,27 +16,17 @@ namespace proxima {
         return (r << 24) + (g << 16) + (b << 8) + 0xff;
     }
 
-    Vec3 barycentric(Vec3 p, Vec3 a, Vec3 b, Vec3 c) {
-        float abc = cross(b - a, c - a).z;
-        float pbc = cross(b - p, c - p).z;
-        float pca = cross(c - p, a - p).z;
-        float pab = cross(a - p, b - p).z;
-        return Vec3(pbc, pca, pab) / abc;
-    }
-
     Renderer::Renderer(int width, int height) {
         this->_width = width;
         this->_height = height;
         this->_num_pixels = width * height;
         this->_aspect = (float)width / height;
         this->_frame_buffer = new int[this->_num_pixels];
-        this->_depth_buffer = new float[this->_num_pixels];
         this->_fragment_buffer = new Fragment[this->_num_pixels];
     }
 
     Renderer::~Renderer() {
         delete [] this->_frame_buffer;
-        delete [] this->_depth_buffer;
     }
 
     void Renderer::_calc_matrices() {
@@ -153,47 +143,46 @@ namespace proxima {
     }
 
     void Renderer::_rasterize(Face face, Vec3 color) {
-        int min_x = this->_width;
-        int max_x = 0;
-        int min_y = this->_height;
-        int max_y = 0;
-        for (Vertex *v : face.vertices) {
-            if (v->position.x < min_x)
-                min_x = v->position.x;
-            if (v->position.x > max_x)
-                max_x = v->position.x;
-            if (v->position.y < min_y)
-                min_y = v->position.y;
-            if (v->position.y > max_y)
-                max_y = v->position.y;
-        }
-        min_x = fmax(0, min_x);
-        min_y = fmax(0, min_y);
-        max_x = fmin(this->_width, max_x);
-        max_y = fmin(this->_height, max_y);
-        for (int y=min_y; y<max_y; y++) {
-            for (int x=min_x; x<max_x; x++) {
-                Vec3 a = face.vertices[0]->position * Vec3(1, 1, 0);
-                Vec3 b = face.vertices[1]->position * Vec3(1, 1, 0);
-                Vec3 c = face.vertices[2]->position * Vec3(1, 1, 0);
-                Vec3 weights = barycentric(Vec3(x, y, 0), a, b, c);
-                if (weights.x < 0 || weights.y < 0 || weights.z < 0)
-                    continue;
-
+        std::sort(face.vertices.begin(), face.vertices.end(),
+            [](Vertex *a, Vertex *b) {
+                return a->position.y < b->position.y;
+            }
+        );
+        Vec3 a = face.vertices[0]->position;
+        Vec3 b = face.vertices[1]->position;
+        Vec3 c = face.vertices[2]->position;
+        for (int y=fmax(0, a.y); y<fmin(this->_height, c.y); y++) {
+            float tac = (float)(y - a.y) / (c.y - a.y);
+            Vec3 wac = lerp(Vec3(1, 0, 0), Vec3(0, 0, 1), tac);
+            Vec3 wb;
+            int xac = lerp(a.x, c.x, tac);
+            int xb;
+            if (y < b.y) {
+                float tab = (float)(y - a.y) / (b.y - a.y);
+                wb = lerp(Vec3(1, 0, 0), Vec3(0, 1, 0), tab);
+                xb = lerp(a.x, b.x, tab);
+            } else {
+                float tbc = (float)(y - b.y) / (c.y - b.y);
+                wb = lerp(Vec3(0, 1, 0), Vec3(0, 0, 1), tbc);
+                xb = lerp(b.x, c.x, tbc);
+            }
+            int xmin = fmin(xac, xb);
+            int xmax = fmax(xac, xb);
+            for (int x=fmax(0, xmin); x<fmin(this->_width, xmax); x++) {
+                float tx = (float)(x - xac) / (xb - xac);
+                Vec3 w = lerp(wac, wb, tx);
+                Fragment frag(color);
+                frag.depth =
+                      w.x * a.z
+                    + w.y * b.z
+                    + w.z * c.z;
+                frag.normal =
+                      w.x * face.vertices[0]->normal
+                    + w.y * face.vertices[1]->normal
+                    + w.z * face.vertices[2]->normal;
                 int index = x + y * this->_width;
-                float z =
-                      weights.x * face.vertices[0]->position.z
-                    + weights.y * face.vertices[1]->position.z
-                    + weights.z * face.vertices[2]->position.z;
-                if (z > this->_depth_buffer[index]) continue;
-                this->_depth_buffer[index] = z;
-
-                Vec3 normal =
-                      weights.x * face.vertices[0]->normal
-                    + weights.y * face.vertices[1]->normal
-                    + weights.z * face.vertices[2]->normal;
-                this->_fragment_buffer[index].normal = normal;
-                this->_fragment_buffer[index].color = color;
+                if (frag.depth < this->_fragment_buffer[index].depth)
+                    this->_fragment_buffer[index] = frag;
             }
         }
     }
@@ -245,7 +234,6 @@ namespace proxima {
         for (int i=0; i<this->_num_pixels; i++) {
             this->_fragment_buffer[i] = Fragment();
             this->_frame_buffer[i] = color2rgba(scene.bg_color);
-            this->_depth_buffer[i] = 1;
         }
         this->_calc_matrices();
         for (auto &obj_entry : this->_scene->objects()) {

@@ -24,8 +24,9 @@ namespace proxima {
     public:
         Vec3 color;
         Vec3 normal;
-        Fragment(Vec3 color=Vec3(), Vec3 normal=Vec3(0, 0, -1)) :
-            color(color), normal(normal) {}
+        float depth;
+        Fragment(Vec3 color=Vec3(), Vec3 normal=Vec3(0, 0, -1), float depth=1) :
+            color(color), normal(normal), depth(depth) {}
     };
 
     class Renderer {
@@ -37,7 +38,6 @@ namespace proxima {
         Scene *_scene;
         std::vector<PointLight*> _light_sources;
         int *_frame_buffer;
-        float *_depth_buffer;
         Fragment *_fragment_buffer;
         Mat4 _view_matrix;
         Mat4 _projection_matrix;
