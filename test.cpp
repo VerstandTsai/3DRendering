@@ -26,8 +26,8 @@ void control(Window &window, Camera &camera) {
 }
 
 int main() {
-    int width = 640;
-    int height = 480;
+    int width = 1280;
+    int height = 720;
     Window window(width, height);
     Renderer renderer(width, height);
 
@@ -35,12 +35,13 @@ int main() {
 
     scene.camera.position = Vec3(0, 0, 8);
 
+    /*
     scene["floor"] = new Cube(100, 1, 1000);
     scene["floor"]->position = Vec3(0, -10, -500);
     for (int i=0; i<100; i++) {
         scene["pole" + std::to_string(i)] = new Cube(0.1, 100, 0.1, Vec3(0.5, 0.5, 0.5), 10, Vec3(10, 0, -i));
     }
-    /*
+    */
     scene["sun"] = new PointLight(10000, Vec3(1, 1, 1), Vec3(0, 100, 0));
     scene["light1"] = new PointLight(10, Vec3(1, 0, 0), Vec3(0, 5, 0));
     scene["light2"] = new PointLight(10, Vec3(0, 1, 0), Vec3(6, 0, 0));
@@ -62,9 +63,7 @@ int main() {
     scene["teapot"]->position = Vec3(5, 0, 0);
     scene["teapot"]->color = Vec3(1, 0.5, 0.5);
 
-    */
     while (!window.closed()) {
-        /*
         scene["light1"]->position = rotate(scene["light1"]->position, Vec3(1, 0, 0));
         scene["light2"]->position = rotate(scene["light2"]->position, Vec3(0, 1, 0));
         scene["light3"]->position = rotate(scene["light3"]->position, Vec3(0, 0, 1));
@@ -73,8 +72,6 @@ int main() {
         scene["cuboid"]->euler_angles += Vec3(5, 4, 3);
         scene["sphere"]->euler_angles += Vec3(0, 5, 0);
         scene["teapot"]->euler_angles += Vec3(3, 5, 4);
-        */
-        ;
 
         control(window, scene.camera);
         auto start = high_resolution_clock::now();
