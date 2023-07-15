@@ -7,6 +7,7 @@
 #include <vector>
 #include <array>
 #include <set>
+#include <tuple>
 
 namespace proxima {
     int color2rgba(Vec3 color) {
@@ -63,8 +64,7 @@ namespace proxima {
         }
     }
 
-    void Renderer::_render_object(Object &obj) {
-        // Rebuild the vertex-face table
+    std::tuple<std::vector<Vertex*>, std::vector<Face>> make_vf(Object &obj) {
         std::vector<Vertex*> vertices;
         std::vector<Face> faces;
         for (std::array<int, 3> face_index : obj.face_indices()) {
@@ -80,25 +80,10 @@ namespace proxima {
             vertices.push_back(vc);
             faces.push_back(Face({va, vb, vc}));
         }
+        return {vertices, faces};
+    }
 
-        // Project the vertices
-        float x = deg2rad(obj.euler_angles.x);
-        float y = deg2rad(obj.euler_angles.y);
-        float z = deg2rad(obj.euler_angles.z);
-        Mat4 model_rotation =
-              Mat4::RotY(y)
-            * Mat4::RotX(x)
-            * Mat4::RotZ(z);
-        Mat4 model_matrix = Mat4::Translation(obj.position) * model_rotation;
-        Mat4 modelview_matrix = this->_view_matrix * model_matrix;
-        Mat4 modelview_rotation = this->_view_rotation * model_rotation;
-        for (Vertex *v : vertices) {
-            v->normal = modelview_rotation * v->normal;
-            v->view_pos = modelview_matrix * v->position;
-            v->position = this->_projection_matrix * v->view_pos;
-        }
-
-        // Clip the faces
+    std::tuple<std::set<Vertex*>, std::vector<Face>> clip_faces(std::vector<Face> faces) {
         std::vector<Face> new_faces;
         std::set<Vertex*> new_vertices;
         std::set<Vertex*> old_vertices;
@@ -132,6 +117,31 @@ namespace proxima {
         for (Vertex *v : old_vertices) {
             delete v;
         }
+
+        return {new_vertices, new_faces};
+    }
+
+    void Renderer::_render_object(Object &obj) {
+        auto [vertices, faces] = make_vf(obj);
+
+        // Project the vertices to clip space
+        float x = deg2rad(obj.euler_angles.x);
+        float y = deg2rad(obj.euler_angles.y);
+        float z = deg2rad(obj.euler_angles.z);
+        Mat4 model_rotation =
+              Mat4::RotY(y)
+            * Mat4::RotX(x)
+            * Mat4::RotZ(z);
+        Mat4 model_matrix = Mat4::Translation(obj.position) * model_rotation;
+        Mat4 modelview_matrix = this->_view_matrix * model_matrix;
+        Mat4 modelview_rotation = this->_view_rotation * model_rotation;
+        for (Vertex *v : vertices) {
+            v->normal = modelview_rotation * v->normal;
+            v->view_pos = modelview_matrix * v->position;
+            v->position = this->_projection_matrix * v->view_pos;
+        }
+
+        auto [new_vertices, new_faces] = clip_faces(faces);
 
         // Transform to screen space
         for (Vertex *v : new_vertices) {
@@ -185,19 +195,25 @@ namespace proxima {
                 Vec3 w = lerp(wac, wb, tx);
                 int index = x + y * this->_width;
                 Fragment &frag = this->_fragment_buffer[index];
+
                 float depth =
                       w.x * a.z
                     + w.y * b.z
                     + w.z * c.z;
                 if (depth > frag.depth) continue;
-                frag.depth = depth;
-                frag.color = color;
-                frag.is_light = is_light;
-                frag.shininess = shininess;
-                frag.normal =
+
+                Vec3 normal =
                       w.x * face.vertices[0]->normal
                     + w.y * face.vertices[1]->normal
                     + w.z * face.vertices[2]->normal;
+                if (dot(normal, frag.vision) < 0) continue;
+
+                frag.depth = depth;
+                frag.normal = normal;
+                frag.color = color;
+                frag.is_light = is_light;
+                frag.shininess = shininess;
+                frag.is_nothing = false;
                 frag.view_pos =
                       w.x * face.vertices[0]->view_pos
                     + w.y * face.vertices[1]->view_pos
@@ -206,20 +222,16 @@ namespace proxima {
         }
     }
 
-    void Renderer::_shade(int index) {
-        Fragment frag = this->_fragment_buffer[index];
-        if (dot(frag.normal, frag.vision) < 0) return;
-        if (frag.is_light) {
-            this->_frame_buffer[index] = color2rgba(frag.color);
-            return;
-        }
+    Vec3 Renderer::_shade(Fragment &frag) {
+        if (frag.is_nothing) return this->_scene->bg_color;
+        if (frag.is_light) return frag.color;
 
         // Ambient reflection
         Vec3 ambient = this->_scene->ambient_light * Vec3(1, 1, 1);
         Vec3 diffuse = Vec3(0, 0, 0);
         Vec3 specular = Vec3(0, 0, 0);
 
-        for (PointLight light_source : this->_light_sources) {
+        for (PointLight &light_source : this->_light_sources) {
             Vec3 face_to_light = light_source.position - frag.view_pos;
             Vec3 light = face_to_light.normalized();
             float distance = face_to_light.magnitude();
@@ -236,7 +248,7 @@ namespace proxima {
             specular += pow(fmax(0, rv), frag.shininess) * (-1.0 / frag.shininess + 1) * light_color;
         }
 
-        this->_frame_buffer[index] = color2rgba((ambient + diffuse + specular) * frag.color);
+        return (ambient + diffuse + specular) * frag.color;
     }
 
     int *Renderer::render(Scene &scene) {
@@ -259,7 +271,7 @@ namespace proxima {
             this->_render_object(*obj_entry.second);
         }
         for (int i=0; i<this->_num_pixels; i++) {
-            this->_shade(i);
+            this->_frame_buffer[i] = color2rgba(this->_shade(this->_fragment_buffer[i]));
         }
         return this->_frame_buffer;
     }

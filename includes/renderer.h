@@ -30,10 +30,10 @@ namespace proxima {
         Vec3 view_pos;
         float depth;
         Vec3 vision;
-        bool is_light;
         float shininess;
-        Fragment(Vec3 color=Vec3(), Vec3 normal=Vec3(0, 0, -1), Vec3 view_pos=Vec3(), float depth=1) :
-            color(color), normal(normal), view_pos(view_pos), depth(depth) {}
+        bool is_light;
+        bool is_nothing;
+        Fragment(float depth=1, bool is_nothing=true) : depth(depth), is_nothing(is_nothing) {}
     };
 
     class Renderer {
@@ -52,7 +52,7 @@ namespace proxima {
         void _calc_visions();
         void _calc_matrices();
         void _rasterize(Face face, Vec3 color, bool is_light, float shininess);
-        void _shade(int index);
+        Vec3 _shade(Fragment &frag);
         void _render_object(Object &obj);
 
     public:
