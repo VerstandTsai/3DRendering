@@ -35,13 +35,6 @@ int main() {
 
     scene.camera.position = Vec3(0, 0, 8);
 
-    /*
-    scene["floor"] = new Cube(100, 1, 1000);
-    scene["floor"]->position = Vec3(0, -10, -500);
-    for (int i=0; i<100; i++) {
-        scene["pole" + std::to_string(i)] = new Cube(0.1, 100, 0.1, Vec3(0.5, 0.5, 0.5), 10, Vec3(10, 0, -i));
-    }
-    */
     scene["sun"] = new PointLight(10000, Vec3(1, 1, 1), Vec3(0, 100, 0));
     scene["light1"] = new PointLight(10, Vec3(1, 0, 0), Vec3(0, 5, 0));
     scene["light2"] = new PointLight(10, Vec3(0, 1, 0), Vec3(6, 0, 0));
@@ -55,7 +48,7 @@ int main() {
     scene["cuboid"]->position = Vec3(-2, 0, 0);
     scene["cuboid"]->color = Vec3(1, 1, 0);
 
-    scene["sphere"] = new Sphere(1, 12);
+    scene["sphere"] = new Sphere(1, 100);
     scene["sphere"]->position = Vec3(0, 0, 0);
     scene["sphere"]->color = Vec3(1, 0.2, 0.2);
 

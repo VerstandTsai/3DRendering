@@ -2,10 +2,10 @@
 #include "objects.h"
 #include "scene.h"
 #include "vec3.h"
-#include <array>
-#include <algorithm>
 #include <cmath>
+#include <algorithm>
 #include <vector>
+#include <array>
 #include <set>
 
 namespace proxima {
@@ -27,6 +27,7 @@ namespace proxima {
 
     Renderer::~Renderer() {
         delete [] this->_frame_buffer;
+        delete [] this->_fragment_buffer;
     }
 
     void Renderer::_calc_matrices() {
@@ -56,7 +57,7 @@ namespace proxima {
         int index = 0;
         for (int y=half_height; y>-half_height; y--) {
             for (int x=-half_width; x<half_width; x++) {
-                this->_fragment_buffer[index].cam_normal = -Vec3(x, y, z).normalized();
+                this->_fragment_buffer[index].vision = -Vec3(x, y, z).normalized();
                 index++;
             }
         }
@@ -144,7 +145,7 @@ namespace proxima {
 
         // Create the fragments
         for (Face face : new_faces) {
-            this->_rasterize(face, obj.color);
+            this->_rasterize(face, obj.color, obj.is_light(), obj.shininess);
         }
 
         // Clean up
@@ -153,7 +154,7 @@ namespace proxima {
         }
     }
 
-    void Renderer::_rasterize(Face face, Vec3 color) {
+    void Renderer::_rasterize(Face face, Vec3 color, bool is_light, float shininess) {
         std::sort(face.vertices.begin(), face.vertices.end(),
             [](Vertex *a, Vertex *b) {
                 return a->position.y < b->position.y;
@@ -191,67 +192,62 @@ namespace proxima {
                 if (depth > frag.depth) continue;
                 frag.depth = depth;
                 frag.color = color;
+                frag.is_light = is_light;
+                frag.shininess = shininess;
                 frag.normal =
                       w.x * face.vertices[0]->normal
                     + w.y * face.vertices[1]->normal
                     + w.z * face.vertices[2]->normal;
                 frag.view_pos =
-                      w.x * face.vertices[0]->view_pos  
-                    + w.y * face.vertices[1]->view_pos  
-                    + w.z * face.vertices[2]->view_pos; 
+                      w.x * face.vertices[0]->view_pos
+                    + w.y * face.vertices[1]->view_pos
+                    + w.z * face.vertices[2]->view_pos;
             }
         }
     }
 
     void Renderer::_shade(int index) {
         Fragment frag = this->_fragment_buffer[index];
-        Vec3 color = Vec3(1, 1, 1) * fmax(0, dot(frag.cam_normal, frag.normal));
-        this->_frame_buffer[index] = color2rgba(color);
-    }
-    /*
-    Vec3 Renderer::_shade(std::array<Vec3, 3> face, Vec3 color, int shininess) {
-        // Calculate the centroid of the face
-        Vec3 face_pos = (face[0] + face[1] + face[2]) / 3;
-
-        // Calculate the normal of the face
-        Vec3 normal = cross(face[1] - face[0], face[2] - face[0]).normalized();
-
-        // Don't rendering the back of the face
-        Vec3 vision = (this->_scene->camera.position - face_pos).normalized();
-        if (dot(normal, vision) < 0) return Vec3(-1, -1, -1);
+        if (dot(frag.normal, frag.vision) < 0) return;
+        if (frag.is_light) {
+            this->_frame_buffer[index] = color2rgba(frag.color);
+            return;
+        }
 
         // Ambient reflection
         Vec3 ambient = this->_scene->ambient_light * Vec3(1, 1, 1);
         Vec3 diffuse = Vec3(0, 0, 0);
         Vec3 specular = Vec3(0, 0, 0);
 
-        for (auto light_source : this->_light_sources) {
-            Vec3 face_to_light = light_source->position - face_pos;
+        for (PointLight light_source : this->_light_sources) {
+            Vec3 face_to_light = light_source.position - frag.view_pos;
             Vec3 light = face_to_light.normalized();
             float distance = face_to_light.magnitude();
-            float intensity = ((PointLight*)light_source)->intensity;
-            Vec3 light_color = light_source->color * intensity / pow(distance, 2);
+            float intensity = light_source.intensity;
+            Vec3 light_color = light_source.color * intensity / pow(distance, 2);
 
             // Diffuse reflection
-            float ln = dot(light, normal);
+            float ln = dot(light, frag.normal);
             diffuse += fmax(0, ln) * light_color;
 
             // Specular reflection
-            Vec3 reflection = 2 * ln * normal - light;
-            float rv = dot(reflection, vision);
-            specular += pow(fmax(0, rv), shininess) * (-1.0 / shininess + 1) * light_color;
+            Vec3 reflection = 2 * ln * frag.normal - light;
+            float rv = dot(reflection, frag.vision);
+            specular += pow(fmax(0, rv), frag.shininess) * (-1.0 / frag.shininess + 1) * light_color;
         }
 
-        return (ambient + diffuse + specular) * color;
+        this->_frame_buffer[index] = color2rgba((ambient + diffuse + specular) * frag.color);
     }
-    */
 
     int *Renderer::render(Scene &scene) {
         this->_scene = &scene;
         this->_light_sources.clear();
         for (auto &obj_entry : scene.objects()) {
-            if (obj_entry.second->is_light())
-                this->_light_sources.push_back((PointLight*)(obj_entry.second));
+            if (obj_entry.second->is_light()) {
+                PointLight light_source = *(PointLight*)(obj_entry.second);
+                light_source.position = this->_view_matrix * light_source.position;
+                this->_light_sources.push_back(light_source);
+            }
         }
         for (int i=0; i<this->_num_pixels; i++) {
             this->_fragment_buffer[i] = Fragment();
