@@ -103,17 +103,12 @@ namespace proxima {
         return result;
     }
 
-    std::ostream& operator<<(std::ostream& os, const Vec3 &v) {
-        os << '{' << v.x << ", " << v.y << ", " << v.z << '}';
-        return os;
-    }
-
     Vec4 lerp(Vec4 a, Vec4 b, float t) {
         return Vec4(
-            lerp(a.x, b.x, t),
-            lerp(a.y, b.y, t),
-            lerp(a.z, b.z, t),
-            lerp(a.w, b.w, t)
+            std::lerp(a.x, b.x, t),
+            std::lerp(a.y, b.y, t),
+            std::lerp(a.z, b.z, t),
+            std::lerp(a.w, b.w, t)
         );
     }
 

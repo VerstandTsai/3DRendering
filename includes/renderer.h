@@ -49,8 +49,8 @@ namespace proxima {
         Mat4 _view_rotation;
         Mat4 _view_matrix;
         Mat4 _projection_matrix;
+        void _calc_visions();
         void _calc_matrices();
-        void _calc_cam_normals();
         void _rasterize(Face face, Vec3 color, bool is_light, float shininess);
         void _shade(int index);
         void _render_object(Object &obj);

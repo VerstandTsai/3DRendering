@@ -50,7 +50,7 @@ namespace proxima {
         }}});
     }
 
-    void Renderer::_calc_cam_normals() {
+    void Renderer::_calc_visions() {
         int half_width = this->_width >> 1;
         int half_height = this->_height >> 1;
         float z = -half_height / tan(deg2rad(this->_scene->camera.fov / 2));
@@ -167,16 +167,16 @@ namespace proxima {
             float tac = (float)(y - a.y) / (c.y - a.y);
             Vec3 wac = lerp(Vec3(1, 0, 0), Vec3(0, 0, 1), tac);
             Vec3 wb;
-            int xac = lerp(a.x, c.x, tac);
+            int xac = std::lerp(a.x, c.x, tac);
             int xb;
             if (y < b.y) {
                 float tab = (float)(y - a.y) / (b.y - a.y);
                 wb = lerp(Vec3(1, 0, 0), Vec3(0, 1, 0), tab);
-                xb = lerp(a.x, b.x, tab);
+                xb = std::lerp(a.x, b.x, tab);
             } else {
                 float tbc = (float)(y - b.y) / (c.y - b.y);
                 wb = lerp(Vec3(0, 1, 0), Vec3(0, 0, 1), tbc);
-                xb = lerp(b.x, c.x, tbc);
+                xb = std::lerp(b.x, c.x, tbc);
             }
             int xmin = fmin(xac, xb);
             int xmax = fmax(xac, xb);
@@ -240,7 +240,13 @@ namespace proxima {
     }
 
     int *Renderer::render(Scene &scene) {
+        for (int i=0; i<this->_num_pixels; i++) {
+            this->_fragment_buffer[i] = Fragment();
+            this->_frame_buffer[i] = color2rgba(scene.bg_color);
+        }
         this->_scene = &scene;
+        this->_calc_visions();
+        this->_calc_matrices();
         this->_light_sources.clear();
         for (auto &obj_entry : scene.objects()) {
             if (obj_entry.second->is_light()) {
@@ -249,12 +255,6 @@ namespace proxima {
                 this->_light_sources.push_back(light_source);
             }
         }
-        for (int i=0; i<this->_num_pixels; i++) {
-            this->_fragment_buffer[i] = Fragment();
-            this->_frame_buffer[i] = color2rgba(scene.bg_color);
-        }
-        this->_calc_matrices();
-        this->_calc_cam_normals();
         for (auto &obj_entry : this->_scene->objects()) {
             this->_render_object(*obj_entry.second);
         }

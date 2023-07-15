@@ -4,6 +4,7 @@
 #include <array>
 #include <iostream>
 #include <cmath>
+
 namespace proxima {
     inline float deg2rad(float degree) {
         return degree / 180 * M_PI;
@@ -30,7 +31,7 @@ namespace proxima {
     inline Vec3 operator/(Vec3 v, float a);
     inline Vec3 operator/(float a, const Vec3 &v);
     inline Vec3 operator-(const Vec3 &v);
-    std::ostream& operator<<(std::ostream& os, const Vec3 &v);
+    inline std::ostream& operator<<(std::ostream& os, const Vec3 &v);
 
     inline float dot(Vec3 a, Vec3 b);
     inline Vec3 cross(Vec3 a, Vec3 b);
@@ -147,6 +148,11 @@ namespace proxima {
         return Vec3(0, 0, 0) - v;
     }
 
+    std::ostream& operator<<(std::ostream& os, const Vec3 &v) {
+        os << '{' << v.x << ", " << v.y << ", " << v.z << '}';
+        return os;
+    }
+
     float dot(Vec3 a, Vec3 b) {
         return a.x*b.x + a.y*b.y + a.z*b.z;
     }
@@ -157,10 +163,6 @@ namespace proxima {
         v.y = a.z*b.x - a.x*b.z;
         v.z = a.x*b.y - a.y*b.x;
         return v;
-    }
-
-    float lerp(float a, float b, float t) {
-        return (1 - t) * a + t * b;
     }
 
     Vec3 lerp(Vec3 a, Vec3 b, float t) {

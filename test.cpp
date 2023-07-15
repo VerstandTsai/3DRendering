@@ -31,7 +31,7 @@ int main() {
     Window window(width, height);
     Renderer renderer(width, height);
 
-    Scene scene(Vec3(0, 0, 0));
+    Scene scene(Vec3(0.5, 0.8, 1));
 
     scene.camera.position = Vec3(0, 0, 8);
 
