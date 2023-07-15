@@ -37,10 +37,10 @@ namespace proxima {
         float x = deg2rad(cam.euler_angles.x);
         float y = deg2rad(cam.euler_angles.y);
         float a = 1 / this->_aspect;
-        this->_view_matrix =
+        this->_view_rotation =
               Mat4::RotX(-x)
-            * Mat4::RotY(-y)
-            * Mat4::Translation(-cam.position);
+            * Mat4::RotY(-y);
+        this->_view_matrix = this->_view_rotation * Mat4::Translation(-cam.position);
         this->_projection_matrix = Mat4({{{
             {a*s, 0,        0,          0},
             {  0, s,        0,          0},
@@ -49,31 +49,28 @@ namespace proxima {
         }}});
     }
 
-    void Renderer::_render_object(Object &obj) {
-        // Calculate all vertices' absolute coordinates
-        // and project them onto the screen
-        float x = deg2rad(obj.euler_angles.x);
-        float y = deg2rad(obj.euler_angles.y);
-        float z = deg2rad(obj.euler_angles.z);
-        Mat4 model_matrix =
-              Mat4::Translation(obj.position)
-            * Mat4::RotY(y)
-            * Mat4::RotX(x)
-            * Mat4::RotZ(z);
-        std::vector<Vec3> view_space;
-        for (Vec3 vertex : obj.vertices()) {
-            Vec3 view_v = this->_view_matrix * model_matrix * vertex;
-            view_space.push_back(view_v);
+    void Renderer::_calc_cam_normals() {
+        int half_width = this->_width >> 1;
+        int half_height = this->_height >> 1;
+        float z = -half_height / tan(deg2rad(this->_scene->camera.fov / 2));
+        int index = 0;
+        for (int y=half_height; y>-half_height; y--) {
+            for (int x=-half_width; x<half_width; x++) {
+                this->_fragment_buffer[index].cam_normal = -Vec3(x, y, z).normalized();
+                index++;
+            }
         }
+    }
 
+    void Renderer::_render_object(Object &obj) {
         // Rebuild the vertex-face table
         std::vector<Vertex*> vertices;
         std::vector<Face> faces;
         for (std::array<int, 3> face_index : obj.face_indices()) {
-            Vec3 a = view_space[face_index[0]];
-            Vec3 b = view_space[face_index[1]];
-            Vec3 c = view_space[face_index[2]];
-            Vec3 normal = cross(b-a, c-a);
+            Vec3 a = obj.vertices()[face_index[0]];
+            Vec3 b = obj.vertices()[face_index[1]];
+            Vec3 c = obj.vertices()[face_index[2]];
+            Vec3 normal = cross(b-a, c-a).normalized();
             Vertex *va = new Vertex(a, normal);
             Vertex *vb = new Vertex(b, normal);
             Vertex *vc = new Vertex(c, normal);
@@ -83,8 +80,21 @@ namespace proxima {
             faces.push_back(Face({va, vb, vc}));
         }
 
+        // Project the vertices
+        float x = deg2rad(obj.euler_angles.x);
+        float y = deg2rad(obj.euler_angles.y);
+        float z = deg2rad(obj.euler_angles.z);
+        Mat4 model_rotation =
+              Mat4::RotY(y)
+            * Mat4::RotX(x)
+            * Mat4::RotZ(z);
+        Mat4 model_matrix = Mat4::Translation(obj.position) * model_rotation;
+        Mat4 modelview_matrix = this->_view_matrix * model_matrix;
+        Mat4 modelview_rotation = this->_view_rotation * model_rotation;
         for (Vertex *v : vertices) {
-            v->position = this->_projection_matrix * v->position;
+            v->normal = modelview_rotation * v->normal;
+            v->view_pos = modelview_matrix * v->position;
+            v->position = this->_projection_matrix * v->view_pos;
         }
 
         // Clip the faces
@@ -106,7 +116,8 @@ namespace proxima {
                     float t = a->position.z / (a->position.z - b->position.z);
                     Vec4 new_pos = lerp(a->position, b->position, t);
                     Vec3 new_normal = lerp(a->normal, b->normal, t);
-                    Vertex *new_vertex = new Vertex(new_pos, new_normal);
+                    Vec3 new_view_pos = lerp(a->view_pos, b->view_pos, t);
+                    Vertex *new_vertex = new Vertex(new_pos, new_normal, new_view_pos);
                     face_vertices.push_back(new_vertex);
                     new_vertices.insert(new_vertex);
                 }
@@ -171,20 +182,31 @@ namespace proxima {
             for (int x=fmax(0, xmin); x<fmin(this->_width, xmax); x++) {
                 float tx = (float)(x - xac) / (xb - xac);
                 Vec3 w = lerp(wac, wb, tx);
-                Fragment frag(color);
-                frag.depth =
+                int index = x + y * this->_width;
+                Fragment &frag = this->_fragment_buffer[index];
+                float depth =
                       w.x * a.z
                     + w.y * b.z
                     + w.z * c.z;
+                if (depth > frag.depth) continue;
+                frag.depth = depth;
+                frag.color = color;
                 frag.normal =
                       w.x * face.vertices[0]->normal
                     + w.y * face.vertices[1]->normal
                     + w.z * face.vertices[2]->normal;
-                int index = x + y * this->_width;
-                if (frag.depth < this->_fragment_buffer[index].depth)
-                    this->_fragment_buffer[index] = frag;
+                frag.view_pos =
+                      w.x * face.vertices[0]->view_pos  
+                    + w.y * face.vertices[1]->view_pos  
+                    + w.z * face.vertices[2]->view_pos; 
             }
         }
+    }
+
+    void Renderer::_shade(int index) {
+        Fragment frag = this->_fragment_buffer[index];
+        Vec3 color = Vec3(1, 1, 1) * fmax(0, dot(frag.cam_normal, frag.normal));
+        this->_frame_buffer[index] = color2rgba(color);
     }
     /*
     Vec3 Renderer::_shade(std::array<Vec3, 3> face, Vec3 color, int shininess) {
@@ -236,11 +258,12 @@ namespace proxima {
             this->_frame_buffer[i] = color2rgba(scene.bg_color);
         }
         this->_calc_matrices();
+        this->_calc_cam_normals();
         for (auto &obj_entry : this->_scene->objects()) {
             this->_render_object(*obj_entry.second);
         }
         for (int i=0; i<this->_num_pixels; i++) {
-            this->_frame_buffer[i] = color2rgba(this->_fragment_buffer[i].color);
+            this->_shade(i);
         }
         return this->_frame_buffer;
     }

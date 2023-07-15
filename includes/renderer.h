@@ -11,7 +11,9 @@ namespace proxima {
     public:
         Vec4 position;
         Vec3 normal;
-        Vertex(Vec4 position=Vec4(), Vec3 normal=Vec3(0, 0, 1)) : position(position), normal(normal) {}
+        Vec3 view_pos;
+        Vertex(Vec4 position=Vec4(), Vec3 normal=Vec3(0, 0, 1), Vec3 view_pos=Vec3()) :
+            position(position), normal(normal), view_pos(view_pos) {}
     };
 
     class Face {
@@ -24,9 +26,11 @@ namespace proxima {
     public:
         Vec3 color;
         Vec3 normal;
+        Vec3 view_pos;
         float depth;
-        Fragment(Vec3 color=Vec3(), Vec3 normal=Vec3(0, 0, -1), float depth=1) :
-            color(color), normal(normal), depth(depth) {}
+        Vec3 cam_normal;
+        Fragment(Vec3 color=Vec3(), Vec3 normal=Vec3(0, 0, -1), Vec3 view_pos=Vec3(), float depth=1) :
+            color(color), normal(normal), view_pos(view_pos), depth(depth) {}
     };
 
     class Renderer {
@@ -39,10 +43,13 @@ namespace proxima {
         std::vector<PointLight*> _light_sources;
         int *_frame_buffer;
         Fragment *_fragment_buffer;
+        Mat4 _view_rotation;
         Mat4 _view_matrix;
         Mat4 _projection_matrix;
         void _calc_matrices();
+        void _calc_cam_normals();
         void _rasterize(Face face, Vec3 color);
+        void _shade(int index);
         void _render_object(Object &obj);
 
     public:
