@@ -15,6 +15,7 @@ namespace proxima {
         this->_is_light = false;
         this->position = Vec3();
         this->euler_angles = Vec3();
+        this->scale = Vec3(1, 1, 1);
     }
 
     Camera::Camera(float fov, float near, float far) : Object() {
@@ -26,6 +27,7 @@ namespace proxima {
     PointLight::PointLight(float intensity, Vec3 color) : Object(Mesh::Cube(), color) {
         this->_is_light = true;
         this->intensity = intensity;
+        this->scale = Vec3(0.1, 0.1, 0.1);
     }
 }
 

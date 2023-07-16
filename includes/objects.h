@@ -14,6 +14,7 @@ namespace proxima {
     public:
         Vec3 position;
         Vec3 euler_angles;
+        Vec3 scale;
         Vec3 color;
         int shininess;
         const Mesh &mesh() const { return this->_mesh; }

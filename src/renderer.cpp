@@ -159,7 +159,7 @@ namespace proxima {
         Mat4 modelview_rotation = this->_view_rotation * model_rotation;
         for (Vertex *v : vertices) {
             v->normal = modelview_rotation * v->normal;
-            v->view_pos = modelview_matrix * v->position;
+            v->view_pos = modelview_matrix * (v->position * obj.scale);
             v->position = this->_projection_matrix * v->view_pos;
         }
 
