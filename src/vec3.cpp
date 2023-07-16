@@ -116,7 +116,7 @@ namespace proxima {
         float x = deg2rad(eulers.x);
         float y = deg2rad(eulers.y);
         float z = deg2rad(eulers.z);
-        return Mat4::RotY(y) * Mat4::RotX(x) * Mat4::RotZ(z) * v;
+        return Mat4::RotZ(z) * Mat4::RotY(y) * Mat4::RotX(x) * v;
     }
 }
 
