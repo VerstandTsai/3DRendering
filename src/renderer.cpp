@@ -75,7 +75,7 @@ namespace proxima {
                 for (int i=0; i<3; i++) {
                     int vi = face_index[i];
                     int ni = face_index[i+3];
-                    if (!vertex_table.contains({vi, ni})) {  
+                    if (!vertex_table.contains({vi, ni})) {
                         Vec3 v = mesh.vertices()[vi];
                         Vec3 n = mesh.vertex_normals()[ni];
                         vertex_table[{vi, ni}] = new Vertex(v, n);
@@ -254,15 +254,17 @@ namespace proxima {
         Vec3 specular = Vec3(0, 0, 0);
 
         for (PointLight &light_source : this->_light_sources) {
-            Vec3 face_to_light = light_source.position - frag.view_pos;
-            Vec3 light = face_to_light.normalized();
-            float distance = face_to_light.magnitude();
+            Vec3 frag_to_light = light_source.position - frag.view_pos;
+            Vec3 light = frag_to_light.normalized();
+            float distance = frag_to_light.magnitude();
             float intensity = light_source.intensity;
             Vec3 light_color = light_source.color * intensity / pow(distance, 2);
 
             // Diffuse reflection
             float ln = dot(light, frag.normal);
             diffuse += fmax(0, ln) * light_color;
+
+            if (ln < 0) continue;
 
             // Specular reflection
             Vec3 reflection = 2 * ln * frag.normal - light;

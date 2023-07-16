@@ -9,7 +9,7 @@ RM = rm
 
 all: libprox.a
 
-test: test.cpp libprox.a $(INC)/proxima.h
+%: %.cpp libprox.a $(INC)/proxima.h
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LDLIBS)
 
 libprox.a: window.o renderer.o vec3.o objects.o mesh.o scene.o
