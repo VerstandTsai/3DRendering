@@ -1,5 +1,4 @@
-#ifndef OBJECTS_H
-#define OBJECTS_H
+#pragma once
 
 #include "vec3.h"
 #include <array>
@@ -85,6 +84,4 @@ namespace proxima {
         PointLight(float intensity=20, Vec3 color=Vec3(1, 1, 1), Vec3 pos=Vec3());
     };
 }
-
-#endif // OBJECTS_H
 

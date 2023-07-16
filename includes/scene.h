@@ -1,9 +1,7 @@
-#ifndef SCENE_H
-#define SCENE_H
+#pragma once
 
 #include "objects.h"
 #include "vec3.h"
-
 #include <string>
 #include <map>
 
@@ -22,6 +20,4 @@ namespace proxima {
         Object *&operator[](std::string obj_name);
     };
 }
-
-#endif // SCENE_H
 

@@ -1,3 +1,5 @@
+#pragma once
+
 #include "vec3.h"
 #include "objects.h"
 #include "scene.h"

@@ -1,5 +1,4 @@
-#ifndef WINDOW_H
-#define WINDOW_H
+#pragma once
 
 #include <SDL2/SDL.h>
 #include <map>
@@ -36,6 +35,4 @@ namespace proxima {
         void draw(int *buf_rgba);
     };
 }
-
-#endif // WINDOW_H
 

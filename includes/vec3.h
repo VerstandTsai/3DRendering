@@ -1,9 +1,8 @@
-#ifndef VEC_H
-#define VEC_H
+#pragma once
 
 #include <array>
-#include <iostream>
 #include <cmath>
+#include <iostream>
 
 namespace proxima {
     inline float deg2rad(float degree) {
@@ -170,6 +169,4 @@ namespace proxima {
     }
 
 }
-
-#endif // VEC_H
 

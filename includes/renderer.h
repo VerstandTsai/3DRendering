@@ -1,5 +1,4 @@
-#ifndef RENDERER_H
-#define RENDERER_H
+#pragma once
 
 #include "vec3.h"
 #include "objects.h"
@@ -61,6 +60,4 @@ namespace proxima {
         int *render(Scene &scene);
     };
 }
-
-#endif // RENDERER_H
 
