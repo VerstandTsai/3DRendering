@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <string>
+#include <cstdio>
 
 namespace proxima {
     Object::Object(Vec3 pos, Vec3 eulers, Vec3 color, int shininess, bool is_light, bool has_normal) {
@@ -27,10 +28,29 @@ namespace proxima {
                 iss >> x >> y >> z;
                 this->_vertices.push_back(Vec3(x, y, z));
             }
+            if (cmd == "vn") {
+                this->_has_normal = true;
+                float x, y, z;
+                iss >> x >> y >> z;
+                this->_vertex_normals.push_back(Vec3(x, y, z).normalized());
+            }
             if (cmd == "f") {
-                int a, b, c;
-                iss >> a >> b >> c;
-                this->_face_indices.push_back({a-1, b-1, c-1});
+                if (this->_has_normal) {
+                    std::array<int, 6> indices;
+                    for (int i=0; i<3; i++) {
+                        std::string index_pair;
+                        iss >> index_pair;
+                        int vertex, normal;
+                        sscanf(index_pair.c_str(), "%d//%d", &vertex, &normal);
+                        indices[i] = vertex - 1;
+                        indices[i+3] = normal - 1;
+                    }
+                    this->_face_indices.push_back(indices);
+                } else {
+                    int a, b, c;
+                    iss >> a >> b >> c;
+                    this->_face_indices.push_back({a-1, b-1, c-1});
+                }
             }
         }
     }
