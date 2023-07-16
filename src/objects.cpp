@@ -6,12 +6,13 @@
 #include <string>
 
 namespace proxima {
-    Object::Object(Vec3 pos, Vec3 eulers, Vec3 color, int shininess, bool is_light) {
+    Object::Object(Vec3 pos, Vec3 eulers, Vec3 color, int shininess, bool is_light, bool has_normal) {
         this->position = pos;
         this->euler_angles = eulers;
         this->color = color;
         this->shininess = shininess;
         this->_is_light = is_light;
+        this->_has_normal = has_normal;
     }
 
     Object::Object(std::string filename) : Object() {
@@ -77,7 +78,7 @@ namespace proxima {
     }
 
     Sphere::Sphere(float radius, int resolution, Vec3 color, int shininess, Vec3 pos, Vec3 eulers)
-        : Object(pos, eulers, color, shininess)
+        : Object(pos, eulers, color, shininess, false, true)
     {
         this->_radius = radius;
         float theta = 180.0 / resolution;
@@ -90,6 +91,7 @@ namespace proxima {
             for (int j=0; j<num_v_ring; j++) {
                 v = rotate(v, Vec3(0, theta, 0));
                 this->_vertices.push_back(v);
+                this->_vertex_normals.push_back(v.normalized());
                 int base_index = i * num_v_ring;
                 int a, b, c, d;
                 b = j + base_index;
@@ -97,18 +99,22 @@ namespace proxima {
                 a = b - num_v_ring;
                 d = c - num_v_ring;
                 if (i == 0) {
-                    this->_face_indices.push_back({num_v_total-2, b, c});
+                    int top = num_v_total - 2;
+                    this->_face_indices.push_back({top, b, c, top, b, c});
                     continue;
                 }
-                this->_face_indices.push_back({a, b, c});
-                this->_face_indices.push_back({c, d, a});
+                this->_face_indices.push_back({a, b, c, a, b, c});
+                this->_face_indices.push_back({c, d, a, c, d, a});
                 if (i == num_rings - 1) {
-                    this->_face_indices.push_back({num_v_total-1, c, b});
+                    int bottom = num_v_total - 1;
+                    this->_face_indices.push_back({bottom, c, b, bottom, c, b});
                 }
             }
         }
         this->_vertices.push_back(Vec3(0, radius, 0));
         this->_vertices.push_back(Vec3(0, -radius, 0));
+        this->_vertex_normals.push_back((Vec3(0, 1, 0)));
+        this->_vertex_normals.push_back((Vec3(0, -1, 0)));
     }
 }
 

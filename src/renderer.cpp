@@ -67,18 +67,39 @@ namespace proxima {
     std::tuple<std::vector<Vertex*>, std::vector<Face>> make_vf(Object &obj) {
         std::vector<Vertex*> vertices;
         std::vector<Face> faces;
-        for (std::array<int, 3> face_index : obj.face_indices()) {
-            Vec3 a = obj.vertices()[face_index[0]];
-            Vec3 b = obj.vertices()[face_index[1]];
-            Vec3 c = obj.vertices()[face_index[2]];
-            Vec3 normal = cross(b-a, c-a).normalized();
-            Vertex *va = new Vertex(a, normal);
-            Vertex *vb = new Vertex(b, normal);
-            Vertex *vc = new Vertex(c, normal);
-            vertices.push_back(va);
-            vertices.push_back(vb);
-            vertices.push_back(vc);
-            faces.push_back(Face({va, vb, vc}));
+        if (obj.has_normal()) {
+            std::map<std::array<int, 2>, Vertex*> vertex_table;
+            for (std::array<int, 6> face_index : obj.face_indices()) {
+                std::array<Vertex*, 3> face_vertices;
+                for (int i=0; i<3; i++) {
+                    int vi = face_index[i];
+                    int ni = face_index[i+3];
+                    if (!vertex_table.contains({vi, ni})) {
+                        Vec3 v = obj.vertices()[vi];
+                        Vec3 n = obj.vertex_normals()[ni];
+                        vertex_table[{vi, ni}] = new Vertex(v, n);
+                    }
+                    face_vertices[i] = vertex_table[{vi, ni}];
+                }
+                faces.push_back(Face(face_vertices));
+            }
+            for (auto &entry : vertex_table) {
+                vertices.push_back(entry.second);
+            }
+        } else {
+            for (std::array<int, 6> face_index : obj.face_indices()) {
+                Vec3 a = obj.vertices()[face_index[0]];
+                Vec3 b = obj.vertices()[face_index[1]];
+                Vec3 c = obj.vertices()[face_index[2]];
+                Vec3 normal = cross(b-a, c-a).normalized();
+                Vertex *va = new Vertex(a, normal);
+                Vertex *vb = new Vertex(b, normal);
+                Vertex *vc = new Vertex(c, normal);
+                vertices.push_back(va);
+                vertices.push_back(vb);
+                vertices.push_back(vc);
+                faces.push_back(Face({va, vb, vc}));
+            }
         }
         return {vertices, faces};
     }
