@@ -31,7 +31,7 @@ int main() {
     Window window(width, height);
     Renderer renderer(width, height);
 
-    Scene scene(Vec3(0, 0, 0));
+    Scene scene(Vec3(0.5, 0.8, 1));
 
     scene.camera.position = Vec3(0, 0, 8);
 
@@ -39,9 +39,6 @@ int main() {
     scene["light1"] = new PointLight(10, Vec3(1, 0, 0), Vec3(0, 5, 0));
     scene["light2"] = new PointLight(10, Vec3(0, 1, 0), Vec3(6, 0, 0));
     scene["light3"] = new PointLight(10, Vec3(0, 0, 1), Vec3(0, 7, 0));
-
-    scene["floor"] = new Cube(500, 1, 1000);
-    scene["floor"]->position = Vec3(0, -5, -500);
 
     scene["monkey"] = new Object("suzanne.obj");
     scene["monkey"]->position = Vec3(-5, 0, 0);
@@ -51,7 +48,7 @@ int main() {
     scene["cuboid"]->position = Vec3(-2, 0, 0);
     scene["cuboid"]->color = Vec3(1, 1, 0);
 
-    scene["sphere"] = new Sphere(1, 100);
+    scene["sphere"] = new Sphere(1, 20);
     scene["sphere"]->position = Vec3(0, 0, 0);
     scene["sphere"]->color = Vec3(1, 0.2, 0.2);
 

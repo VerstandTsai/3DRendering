@@ -3,10 +3,6 @@
 #include <cmath>
 
 namespace proxima {
-    float deg2rad(float degree) {
-        return degree / 180 * M_PI;
-    }
-
     Mat4::Mat4() : Mat4({{
         {0, 0, 0, 0},
         {0, 0, 0, 0},
@@ -88,78 +84,11 @@ namespace proxima {
         return this->_rows[i];
     }
 
-    float Vec3::magnitude() {
-        return sqrt(this->x*this->x + this->y*this->y + this->z*this->z);
-    }
-
-    Vec3 Vec3::normalized() {
-        return *this / this->magnitude();
-    }
-
-    Vec3 &Vec3::operator+=(const Vec3 &v) {
-        this->x += v.x;
-        this->y += v.y;
-        this->z += v.z;
-        return *this;
-    }
-
-    Vec3 &Vec3::operator-=(const Vec3 &v) {
-        this->x -= v.x;
-        this->y -= v.y;
-        this->z -= v.z;
-        return *this;
-    }
-
-    Vec3 &Vec3::operator*=(float a) {
-        this->x *= a;
-        this->y *= a;
-        this->z *= a;
-        return *this;
-    }
-
-    Vec3 &Vec3::operator*=(const Vec3 &v) {
-        this->x *= v.x;
-        this->y *= v.y;
-        this->z *= v.z;
-        return *this;
-    }
-
-    Vec3 &Vec3::operator/=(float a) {
-        this->x /= a;
-        this->y /= a;
-        this->z /= a;
-        return *this;
-    }
-
-    Vec3 operator+(Vec3 a, const Vec3 &b) {
-        a += b;
-        return a;
-    }
-
-    Vec3 operator-(Vec3 a, const Vec3 &b) {
-        a -= b;
-        return a;
-    }
-
-    Vec3 operator*(Vec3 v, float a) {
-        v *= a;
-        return v;
-    }
-
-    Vec3 operator*(float a, const Vec3 &v) {
-        return v * a;
-    }
-
-    Vec3 operator*(Vec3 a, const Vec3 &b) {
-        a *= b;
-        return a;
-    }
-
-    Vec3 operator*(Mat4 a, const Vec3 &v) {
+    Vec4 operator*(Mat4 a, const Vec4 &v) {
         float elements[4];
         for (int i=0; i<4; i++)
-            elements[i] = a[i][0] * v.x + a[i][1] * v.y + a[i][2] * v.z + a[i][3];
-        return Vec3(elements[0], elements[1], elements[2]) / elements[3];
+            elements[i] = a[i][0] * v.x + a[i][1] * v.y + a[i][2] * v.z + a[i][3] * v.w;
+        return Vec4(elements[0], elements[1], elements[2], elements[3]);
     }
 
     Mat4 operator*(Mat4 a, Mat4 b) {
@@ -174,38 +103,13 @@ namespace proxima {
         return result;
     }
 
-    Vec3 operator/(Vec3 v, float a) {
-        v /= a;
-        return v;
-    }
-
-    Vec3 operator/(float a, const Vec3 &v) {
-        return v / a;
-    }
-
-    Vec3 operator-(const Vec3 &v) {
-        return Vec3(0, 0, 0) - v;
-    }
-
-    std::ostream& operator<<(std::ostream& os, const Vec3 &v) {
-        os << '{' << v.x << ", " << v.y << ", " << v.z << '}';
-        return os;
-    }
-
-    float dot(Vec3 a, Vec3 b) {
-        return a.x*b.x + a.y*b.y + a.z*b.z;
-    }
-
-    Vec3 cross(Vec3 a, Vec3 b) {
-        Vec3 v(0, 0, 0);
-        v.x = a.y*b.z - a.z*b.y;
-        v.y = a.z*b.x - a.x*b.z;
-        v.z = a.x*b.y - a.y*b.x;
-        return v;
-    }
-
-    Vec3 lerp(Vec3 a, Vec3 b, float t) {
-        return (1 - t) * a + t * b;
+    Vec4 lerp(Vec4 a, Vec4 b, float t) {
+        return Vec4(
+            std::lerp(a.x, b.x, t),
+            std::lerp(a.y, b.y, t),
+            std::lerp(a.z, b.z, t),
+            std::lerp(a.w, b.w, t)
+        );
     }
 
     Vec3 rotate(Vec3 v, Vec3 eulers) {

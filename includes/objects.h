@@ -10,7 +10,9 @@ namespace proxima {
     class Object {
     protected:
         std::vector<Vec3> _vertices;
-        std::vector<std::array<int, 3>> _face_indices;
+        std::vector<Vec3> _vertex_normals;
+        std::vector<std::array<int, 6>> _face_indices;
+        bool _has_normal;
         bool _is_light;
 
     public:
@@ -19,14 +21,17 @@ namespace proxima {
         Vec3 color;
         int shininess;
         bool is_light() { return this->_is_light; }
+        bool has_normal() { return this->_has_normal; }
         std::vector<Vec3> &vertices() { return this->_vertices; }
-        std::vector<std::array<int, 3>> &face_indices() { return this->_face_indices; }
+        std::vector<Vec3> &vertex_normals() { return this->_vertex_normals; }
+        std::vector<std::array<int, 6>> &face_indices() { return this->_face_indices; }
         Object(
             Vec3 pos=Vec3(),
             Vec3 eulers=Vec3(),
             Vec3 color=Vec3(1, 1, 1),
             int shininess=10,
-            bool is_light=false
+            bool is_light=false,
+            bool has_normal=false
         );
         Object(std::string filename);
     };
@@ -56,7 +61,6 @@ namespace proxima {
         float width() { return this->_width; }
         float height() { return this->_height; }
         float depth() { return this->_depth; }
-        void set_size(float width, float height, float depth);
     };
 
     class Sphere : public Object {
@@ -73,7 +77,6 @@ namespace proxima {
             Vec3 eulers=Vec3()
         );
         float radius() { return this->_radius; }
-        void set_radius(float radius);
     };
 
     class PointLight : public Cube {
