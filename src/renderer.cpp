@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "objects.h"
 #include "scene.h"
+#include "mesh.h"
 #include "vec3.h"
 #include <cmath>
 #include <algorithm>
@@ -64,19 +65,19 @@ namespace proxima {
         }
     }
 
-    std::tuple<std::vector<Vertex*>, std::vector<Face>> make_vf(Object &obj) {
+    std::tuple<std::vector<Vertex*>, std::vector<Face>> make_vf(const Mesh &mesh) {
         std::vector<Vertex*> vertices;
         std::vector<Face> faces;
-        if (obj.has_normal()) {
+        if (mesh.has_normal()) {
             std::map<std::array<int, 2>, Vertex*> vertex_table;
-            for (std::array<int, 6> face_index : obj.face_indices()) {
+            for (std::array<int, 6> face_index : mesh.face_indices()) {
                 std::array<Vertex*, 3> face_vertices;
                 for (int i=0; i<3; i++) {
                     int vi = face_index[i];
                     int ni = face_index[i+3];
-                    if (!vertex_table.contains({vi, ni})) {
-                        Vec3 v = obj.vertices()[vi];
-                        Vec3 n = obj.vertex_normals()[ni];
+                    if (!vertex_table.contains({vi, ni})) {  
+                        Vec3 v = mesh.vertices()[vi];
+                        Vec3 n = mesh.vertex_normals()[ni];
                         vertex_table[{vi, ni}] = new Vertex(v, n);
                     }
                     face_vertices[i] = vertex_table[{vi, ni}];
@@ -87,10 +88,10 @@ namespace proxima {
                 vertices.push_back(entry.second);
             }
         } else {
-            for (std::array<int, 6> face_index : obj.face_indices()) {
-                Vec3 a = obj.vertices()[face_index[0]];
-                Vec3 b = obj.vertices()[face_index[1]];
-                Vec3 c = obj.vertices()[face_index[2]];
+            for (std::array<int, 6> face_index : mesh.face_indices()) {
+                Vec3 a = mesh.vertices()[face_index[0]];
+                Vec3 b = mesh.vertices()[face_index[1]];
+                Vec3 c = mesh.vertices()[face_index[2]];
                 Vec3 normal = cross(b-a, c-a).normalized();
                 Vertex *va = new Vertex(a, normal);
                 Vertex *vb = new Vertex(b, normal);
@@ -104,7 +105,7 @@ namespace proxima {
         return {vertices, faces};
     }
 
-    std::tuple<std::set<Vertex*>, std::vector<Face>> clip_faces(std::vector<Face> faces) {
+    std::tuple<std::set<Vertex*>, std::vector<Face>> clip_faces(std::vector<Face> &faces) {
         std::vector<Face> new_faces;
         std::set<Vertex*> new_vertices;
         std::set<Vertex*> old_vertices;
@@ -143,7 +144,7 @@ namespace proxima {
     }
 
     void Renderer::_render_object(Object &obj) {
-        auto [vertices, faces] = make_vf(obj);
+        auto [vertices, faces] = make_vf(obj.mesh());
 
         // Project the vertices to clip space
         float x = deg2rad(obj.euler_angles.x);

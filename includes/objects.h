@@ -1,17 +1,14 @@
 #pragma once
 
 #include "vec3.h"
+#include "mesh.h"
 #include <array>
-#include <string>
 #include <vector>
 
 namespace proxima {
     class Object {
     protected:
-        std::vector<Vec3> _vertices;
-        std::vector<Vec3> _vertex_normals;
-        std::vector<std::array<int, 6>> _face_indices;
-        bool _has_normal;
+        Mesh _mesh;
         bool _is_light;
 
     public:
@@ -19,20 +16,13 @@ namespace proxima {
         Vec3 euler_angles;
         Vec3 color;
         int shininess;
+        const Mesh &mesh() { return this->_mesh; }
         bool is_light() { return this->_is_light; }
-        bool has_normal() { return this->_has_normal; }
-        std::vector<Vec3> &vertices() { return this->_vertices; }
-        std::vector<Vec3> &vertex_normals() { return this->_vertex_normals; }
-        std::vector<std::array<int, 6>> &face_indices() { return this->_face_indices; }
         Object(
-            Vec3 pos=Vec3(),
-            Vec3 eulers=Vec3(),
+            Mesh mesh=Mesh::Cube(),
             Vec3 color=Vec3(1, 1, 1),
-            int shininess=10,
-            bool is_light=false,
-            bool has_normal=false
+            int shininess=32
         );
-        Object(std::string filename);
     };
 
     class Camera : public Object {
@@ -40,48 +30,13 @@ namespace proxima {
         float fov;
         float near;
         float far;
-        Camera(float fov=90, float near=0.1, float far=1000, Vec3 pos=Vec3(), Vec3 eulers=Vec3());
+        Camera(float fov=90, float near=0.1, float far=1000);
     };
 
-    class Cube : public Object {
-    private:
-        float _width, _height, _depth;
-
-    public:
-        Cube(
-            float width=1,
-            float height=1,
-            float depth=1,
-            Vec3 color=Vec3(1, 1, 1),
-            int shininess=10,
-            Vec3 pos=Vec3(),
-            Vec3 eulers=Vec3()
-        );
-        float width() { return this->_width; }
-        float height() { return this->_height; }
-        float depth() { return this->_depth; }
-    };
-
-    class Sphere : public Object {
-    private:
-        float _radius;
-
-    public:
-        Sphere(
-            float radius=1,
-            int resolution=12,
-            Vec3 color=Vec3(1, 1, 1),
-            int shininess=10,
-            Vec3 pos=Vec3(),
-            Vec3 eulers=Vec3()
-        );
-        float radius() { return this->_radius; }
-    };
-
-    class PointLight : public Cube {
+    class PointLight : public Object {
     public:
         float intensity;
-        PointLight(float intensity=20, Vec3 color=Vec3(1, 1, 1), Vec3 pos=Vec3());
+        PointLight(float intensity=20, Vec3 color=Vec3(1, 1, 1));
     };
 }
 
