@@ -14,15 +14,6 @@ namespace proxima {
         this->_rows = rows;
     }
 
-    Mat4 Mat4::Identity() {
-        return Mat4({{
-            {1, 0, 0, 0},
-            {0, 1, 0, 0},
-            {0, 0, 1, 0},
-            {0, 0, 0, 1},
-        }});
-    }
-
     Mat4 Mat4::Translation(Vec3 displacement) {
         float x = displacement.x;
         float y = displacement.y;

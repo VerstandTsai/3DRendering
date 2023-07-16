@@ -16,3 +16,4 @@ namespace proxima {
         return this->_objects[obj_name];
     }
 }
+

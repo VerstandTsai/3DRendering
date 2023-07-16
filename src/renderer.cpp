@@ -1,6 +1,7 @@
 #include "renderer.h"
 #include "objects.h"
 #include "scene.h"
+#include "mesh.h"
 #include "vec3.h"
 #include <cmath>
 #include <algorithm>
@@ -64,19 +65,19 @@ namespace proxima {
         }
     }
 
-    std::tuple<std::vector<Vertex*>, std::vector<Face>> make_vf(Object &obj) {
+    std::tuple<std::vector<Vertex*>, std::vector<Face>> make_vf(const Mesh &mesh) {
         std::vector<Vertex*> vertices;
         std::vector<Face> faces;
-        if (obj.has_normal()) {
+        if (mesh.has_normal()) {
             std::map<std::array<int, 2>, Vertex*> vertex_table;
-            for (std::array<int, 6> face_index : obj.face_indices()) {
+            for (std::array<int, 6> face_index : mesh.face_indices()) {
                 std::array<Vertex*, 3> face_vertices;
                 for (int i=0; i<3; i++) {
                     int vi = face_index[i];
                     int ni = face_index[i+3];
-                    if (!vertex_table.contains({vi, ni})) {
-                        Vec3 v = obj.vertices()[vi];
-                        Vec3 n = obj.vertex_normals()[ni];
+                    if (!vertex_table.contains({vi, ni})) {  
+                        Vec3 v = mesh.vertices()[vi];
+                        Vec3 n = mesh.vertex_normals()[ni];
                         vertex_table[{vi, ni}] = new Vertex(v, n);
                     }
                     face_vertices[i] = vertex_table[{vi, ni}];
@@ -87,10 +88,10 @@ namespace proxima {
                 vertices.push_back(entry.second);
             }
         } else {
-            for (std::array<int, 6> face_index : obj.face_indices()) {
-                Vec3 a = obj.vertices()[face_index[0]];
-                Vec3 b = obj.vertices()[face_index[1]];
-                Vec3 c = obj.vertices()[face_index[2]];
+            for (std::array<int, 6> face_index : mesh.face_indices()) {
+                Vec3 a = mesh.vertices()[face_index[0]];
+                Vec3 b = mesh.vertices()[face_index[1]];
+                Vec3 c = mesh.vertices()[face_index[2]];
                 Vec3 normal = cross(b-a, c-a).normalized();
                 Vertex *va = new Vertex(a, normal);
                 Vertex *vb = new Vertex(b, normal);
@@ -104,7 +105,7 @@ namespace proxima {
         return {vertices, faces};
     }
 
-    std::tuple<std::set<Vertex*>, std::vector<Face>> clip_faces(std::vector<Face> faces) {
+    std::tuple<std::set<Vertex*>, std::vector<Face>> clip_faces(const std::vector<Face> &faces) {
         std::vector<Face> new_faces;
         std::set<Vertex*> new_vertices;
         std::set<Vertex*> old_vertices;
@@ -142,8 +143,8 @@ namespace proxima {
         return {new_vertices, new_faces};
     }
 
-    void Renderer::_render_object(Object &obj) {
-        auto [vertices, faces] = make_vf(obj);
+    void Renderer::_render_object(const Object &obj) {
+        auto [vertices, faces] = make_vf(obj.mesh());
 
         // Project the vertices to clip space
         float x = deg2rad(obj.euler_angles.x);
@@ -158,7 +159,7 @@ namespace proxima {
         Mat4 modelview_rotation = this->_view_rotation * model_rotation;
         for (Vertex *v : vertices) {
             v->normal = modelview_rotation * v->normal;
-            v->view_pos = modelview_matrix * v->position;
+            v->view_pos = modelview_matrix * (v->position * obj.scale);
             v->position = this->_projection_matrix * v->view_pos;
         }
 
@@ -243,7 +244,7 @@ namespace proxima {
         }
     }
 
-    Vec3 Renderer::_shade(Fragment &frag) {
+    Vec3 Renderer::_shade(const Fragment &frag) {
         if (frag.is_nothing) return this->_scene->bg_color;
         if (frag.is_light) return frag.color;
 
@@ -272,7 +273,7 @@ namespace proxima {
         return (ambient + diffuse + specular) * frag.color;
     }
 
-    int *Renderer::render(Scene &scene) {
+    int *Renderer::render(const Scene &scene) {
         for (int i=0; i<this->_num_pixels; i++) {
             this->_fragment_buffer[i] = Fragment();
             this->_frame_buffer[i] = color2rgba(scene.bg_color);
@@ -288,7 +289,7 @@ namespace proxima {
                 this->_light_sources.push_back(light_source);
             }
         }
-        for (auto &obj_entry : this->_scene->objects()) {
+        for (auto &obj_entry : scene.objects()) {
             this->_render_object(*obj_entry.second);
         }
         for (int i=0; i<this->_num_pixels; i++) {
