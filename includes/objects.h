@@ -16,8 +16,8 @@ namespace proxima {
         Vec3 euler_angles;
         Vec3 color;
         int shininess;
-        const Mesh &mesh() { return this->_mesh; }
-        bool is_light() { return this->_is_light; }
+        const Mesh &mesh() const { return this->_mesh; }
+        bool is_light() const { return this->_is_light; }
         Object(
             Mesh mesh=Mesh::Cube(),
             Vec3 color=Vec3(1, 1, 1),

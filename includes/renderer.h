@@ -41,7 +41,7 @@ namespace proxima {
         int _height;
         int _num_pixels;
         float _aspect;
-        Scene *_scene;
+        const Scene *_scene;
         std::vector<PointLight> _light_sources;
         int *_frame_buffer;
         Fragment *_fragment_buffer;
@@ -51,13 +51,13 @@ namespace proxima {
         void _calc_visions();
         void _calc_matrices();
         void _rasterize(Face face, Vec3 color, bool is_light, float shininess);
-        Vec3 _shade(Fragment &frag);
-        void _render_object(Object &obj);
+        Vec3 _shade(const Fragment &frag);
+        void _render_object(const Object &obj);
 
     public:
         Renderer(int width, int height);
         ~Renderer();
-        int *render(Scene &scene);
+        int *render(const Scene &scene);
     };
 }
 

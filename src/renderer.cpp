@@ -105,7 +105,7 @@ namespace proxima {
         return {vertices, faces};
     }
 
-    std::tuple<std::set<Vertex*>, std::vector<Face>> clip_faces(std::vector<Face> &faces) {
+    std::tuple<std::set<Vertex*>, std::vector<Face>> clip_faces(const std::vector<Face> &faces) {
         std::vector<Face> new_faces;
         std::set<Vertex*> new_vertices;
         std::set<Vertex*> old_vertices;
@@ -143,7 +143,7 @@ namespace proxima {
         return {new_vertices, new_faces};
     }
 
-    void Renderer::_render_object(Object &obj) {
+    void Renderer::_render_object(const Object &obj) {
         auto [vertices, faces] = make_vf(obj.mesh());
 
         // Project the vertices to clip space
@@ -244,7 +244,7 @@ namespace proxima {
         }
     }
 
-    Vec3 Renderer::_shade(Fragment &frag) {
+    Vec3 Renderer::_shade(const Fragment &frag) {
         if (frag.is_nothing) return this->_scene->bg_color;
         if (frag.is_light) return frag.color;
 
@@ -273,7 +273,7 @@ namespace proxima {
         return (ambient + diffuse + specular) * frag.color;
     }
 
-    int *Renderer::render(Scene &scene) {
+    int *Renderer::render(const Scene &scene) {
         for (int i=0; i<this->_num_pixels; i++) {
             this->_fragment_buffer[i] = Fragment();
             this->_frame_buffer[i] = color2rgba(scene.bg_color);
@@ -289,7 +289,7 @@ namespace proxima {
                 this->_light_sources.push_back(light_source);
             }
         }
-        for (auto &obj_entry : this->_scene->objects()) {
+        for (auto &obj_entry : scene.objects()) {
             this->_render_object(*obj_entry.second);
         }
         for (int i=0; i<this->_num_pixels; i++) {
