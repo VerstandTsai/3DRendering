@@ -1,29 +1,8 @@
 #include "proxima.h"
-#include <chrono>
+#include "control.h"
+#include "dashboard.h"
 
 using namespace proxima;
-using namespace std::chrono;
-
-void control(Window &window, Camera &camera) {
-    Vec3 cam_normal = rotate(Vec3(0, 0, -1), camera.euler_angles);
-    Vec3 right = cross(cam_normal, Vec3(0, 1, 0)).normalized();
-    Vec3 front = cross(Vec3(0, 1, 0), right);
-
-    if (window.keydown(W))
-        camera.position += front;
-    if (window.keydown(S))
-        camera.position -= front;
-    if (window.keydown(A))
-        camera.position -= right;
-    if (window.keydown(D))
-        camera.position += right;
-    if (window.keydown(SPACE))
-        camera.position += Vec3(0, 1, 0);
-    if (window.keydown(LSHIFT))
-        camera.position -= Vec3(0, 1, 0);
-
-    camera.euler_angles -= Vec3(window.mouse_dy(), window.mouse_dx(), 0);
-}
 
 int main() {
     int width = 1280;
@@ -66,11 +45,8 @@ int main() {
         scene["light"]->color = (Vec3(sin(t), sin(1.2*t), sin(0.8*t)) + Vec3(1, 1, 1)) / 2;
         t += 0.1;
         control(window, scene.camera);
-        auto start = high_resolution_clock::now();
         window.draw(renderer.render(scene));
-        auto end = high_resolution_clock::now();
-        auto dur = duration_cast<milliseconds>(end - start);
-        std::cout << "\rFPS: " << 1000 / dur.count() << std::flush;
+        show_fps();
     }
 
     return 0;
