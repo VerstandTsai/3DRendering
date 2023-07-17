@@ -13,6 +13,12 @@ namespace proxima {
         LSHIFT = SDLK_LSHIFT
     };
 
+    enum MouseButton {
+        LEFT = SDL_BUTTON_LEFT,
+        MIDDLE = SDL_BUTTON_MIDDLE,
+        RIGHT = SDL_BUTTON_RIGHT
+    };
+
     class Window {
     private:
         static bool _sdl_inited;
@@ -22,6 +28,7 @@ namespace proxima {
         SDL_Renderer *_renderer;
         SDL_Texture *_buffer;
         std::map<int, bool> _keyboard;
+        std::map<int, bool> _mouse_buttons;
         int _mouse_dx;
         int _mouse_dy;
 
@@ -30,6 +37,7 @@ namespace proxima {
         ~Window();
         bool closed();
         bool keydown(KeyCode code);
+        bool mouse_button_down(MouseButton button);
         int mouse_dx() { return this->_mouse_dx; }
         int mouse_dy() { return this->_mouse_dy; }
         void draw(int *buf_rgba);

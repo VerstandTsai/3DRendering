@@ -24,6 +24,7 @@ namespace proxima {
     }
 
     Window::~Window() {
+        SDL_DestroyTexture(this->_buffer);
         SDL_DestroyRenderer(this->_renderer);
         SDL_DestroyWindow(this->_window);
         SDL_Quit();
@@ -42,6 +43,12 @@ namespace proxima {
             case SDL_KEYUP:
                 this->_keyboard[event.key.keysym.sym] = false;
                 break;
+            case SDL_MOUSEBUTTONDOWN:
+                this->_mouse_buttons[event.button.button] = true;
+                break;
+            case SDL_MOUSEBUTTONUP:
+                this->_mouse_buttons[event.button.button] = false;
+                break;
             case SDL_MOUSEMOTION:
                 mouse_moved = true;
                 this->_mouse_dx = event.motion.xrel;
@@ -58,6 +65,12 @@ namespace proxima {
     bool Window::keydown(KeyCode code) {
         if (this->_keyboard.contains(code))
             return this->_keyboard[code];
+        return false;
+    }
+
+    bool Window::mouse_button_down(MouseButton button) {
+        if (this->_mouse_buttons.contains(button))
+            return this->_mouse_buttons[button];
         return false;
     }
 

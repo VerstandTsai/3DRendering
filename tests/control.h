@@ -18,6 +18,10 @@ inline void control(Window &window, Camera &camera) {
         camera.position += Vec3(0, 1, 0);
     if (window.keydown(LSHIFT))
         camera.position -= Vec3(0, 1, 0);
+    if (window.mouse_button_down(RIGHT))
+        camera.fov = 30;
+    else
+        camera.fov = 90;
 
     camera.euler_angles -= Vec3(window.mouse_dy(), window.mouse_dx(), 0);
 }
