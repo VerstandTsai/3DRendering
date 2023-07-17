@@ -44,7 +44,7 @@ int main() {
     scene["light3"] = new PointLight(10, Vec3(0, 0, 1));
     scene["light3"]->position = Vec3(0, 7, 0);
 
-    scene["monkey"] = new Object(Mesh("suzanne.obj"));
+    scene["monkey"] = new Object(Mesh("./static/suzanne.obj"));
     scene["monkey"]->position = Vec3(-5, 0, 0);
     scene["monkey"]->color = Vec3(0.2, 0.2, 1);
 
@@ -56,7 +56,7 @@ int main() {
     scene["sphere"]->position = Vec3(0, 0, 0);
     scene["sphere"]->color = Vec3(1, 0.2, 0.2);
 
-    scene["teapot"] = new Object(Mesh("teapot.obj"));
+    scene["teapot"] = new Object(Mesh("./static/teapot.obj"));
     scene["teapot"]->position = Vec3(5, 0, 0);
     scene["teapot"]->color = Vec3(1, 0.5, 0.5);
 

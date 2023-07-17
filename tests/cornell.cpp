@@ -37,7 +37,7 @@ int main() {
     scene["light"] = new PointLight();
     scene["light"]->position = Vec3(0, 4.8, 0);
 
-    scene["teapot"] = new Object(Mesh("teapot.obj"));
+    scene["teapot"] = new Object(Mesh("./static/teapot.obj"));
     scene["teapot"]->scale = 1.5 * Vec3(1, 1, 1);
     scene["teapot"]->position = Vec3(0, -4.8, 0);
 
