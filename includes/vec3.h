@@ -35,7 +35,6 @@ namespace proxima {
     inline float dot(Vec3 a, Vec3 b);
     inline Vec3 cross(Vec3 a, Vec3 b);
     inline Vec3 lerp(Vec3 a, Vec3 b, float t);
-    inline float lerp(float a, float b, float t);
     Vec3 rotate(Vec3 v, Vec3 eulers);
 
     class Vec4 {

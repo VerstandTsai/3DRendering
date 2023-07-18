@@ -214,7 +214,10 @@ namespace proxima {
             int xmax = fmax(xac, xb);
             for (int x=fmax(0, xmin); x<fmin(this->_width, xmax); x++) {
                 float tx = (float)(x - xac) / (xb - xac);
+
+                // The barycentric coordinate
                 Vec3 w = lerp(wac, wb, tx);
+
                 int index = x + y * this->_width;
                 Fragment &frag = this->_fragment_buffer[index];
 
@@ -224,12 +227,25 @@ namespace proxima {
                     + w.z * c.z;
                 if (depth > frag.depth) continue;
 
-                Vec3 normal =
-                      w.x * face.vertices[0]->normal
-                    + w.y * face.vertices[1]->normal
-                    + w.z * face.vertices[2]->normal;
-                if (dot(normal, frag.vision) < 0) continue;
+                Vertex *va = face.vertices[0];
+                Vertex *vb = face.vertices[1];
+                Vertex *vc = face.vertices[2];
 
+                // Perspective-correct barycentric coordinate
+                Vec3 wp = Vec3(
+                    w.x / va->view_pos.z,
+                    w.y / vb->view_pos.z,
+                    w.z / vc->view_pos.z
+                );
+                wp /= dot(wp, Vec3(1, 1, 1));
+
+                Vec3 normal = (
+                      wp.x * va->normal
+                    + wp.y * vb->normal
+                    + wp.z * vc->normal
+                ).normalized();
+                if (dot(normal, frag.vision) < 0) continue;
+   
                 frag.depth = depth;
                 frag.normal = normal;
                 frag.color = color;
@@ -237,9 +253,9 @@ namespace proxima {
                 frag.shininess = shininess;
                 frag.is_nothing = false;
                 frag.view_pos =
-                      w.x * face.vertices[0]->view_pos
-                    + w.y * face.vertices[1]->view_pos
-                    + w.z * face.vertices[2]->view_pos;
+                      wp.x * va->view_pos
+                    + wp.y * vb->view_pos
+                    + wp.z * vc->view_pos;
             }
         }
     }
