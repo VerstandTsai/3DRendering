@@ -123,7 +123,7 @@ namespace proxima {
                 if (a->position.z * b->position.z < 0) {
                     float t = a->position.z / (a->position.z - b->position.z);
                     Vec4 new_pos = lerp(a->position, b->position, t);
-                    Vec3 new_normal = lerp(a->normal, b->normal, t);
+                    Vec3 new_normal = lerp(a->normal, b->normal, t).normalized();
                     Vec3 new_view_pos = lerp(a->view_pos, b->view_pos, t);
                     Vertex *new_vertex = new Vertex(new_pos, new_normal, new_view_pos);
                     face_vertices.push_back(new_vertex);
@@ -186,6 +186,44 @@ namespace proxima {
         }
     }
 
+    void update_frag(Fragment &frag, Vec3 w, Face face, Vec3 color, bool is_light, float shininess) {
+        Vertex *va = face.vertices[0];
+        Vertex *vb = face.vertices[1];
+        Vertex *vc = face.vertices[2];
+
+        float depth =
+              w.x * va->position.z
+            + w.y * vb->position.z
+            + w.z * vc->position.z;
+        if (depth > frag.depth) return;
+
+        // Perspective-correct barycentric coordinate
+        Vec3 wp = Vec3(
+            w.x / va->view_pos.z,
+            w.y / vb->view_pos.z,
+            w.z / vc->view_pos.z
+        );
+        wp /= dot(wp, Vec3(1, 1, 1));
+
+        Vec3 normal = (
+              wp.x * va->normal
+            + wp.y * vb->normal
+            + wp.z * vc->normal
+        ).normalized();
+        if (dot(normal, frag.vision) < 0) return;
+
+        frag.depth = depth;
+        frag.normal = normal;
+        frag.color = color;
+        frag.is_light = is_light;
+        frag.shininess = shininess;
+        frag.is_nothing = false;
+        frag.view_pos =
+              wp.x * va->view_pos
+            + wp.y * vb->view_pos
+            + wp.z * vc->view_pos;
+    }
+
     void Renderer::_rasterize(Face face, Vec3 color, bool is_light, float shininess) {
         std::sort(face.vertices.begin(), face.vertices.end(),
             [](Vertex *a, Vertex *b) {
@@ -214,48 +252,9 @@ namespace proxima {
             int xmax = fmax(xac, xb);
             for (int x=fmax(0, xmin); x<fmin(this->_width, xmax); x++) {
                 float tx = (float)(x - xac) / (xb - xac);
-
-                // The barycentric coordinate
-                Vec3 w = lerp(wac, wb, tx);
-
+                Vec3 w = lerp(wac, wb, tx); // The barycentric coordinate
                 int index = x + y * this->_width;
-                Fragment &frag = this->_fragment_buffer[index];
-
-                float depth =
-                      w.x * a.z
-                    + w.y * b.z
-                    + w.z * c.z;
-                if (depth > frag.depth) continue;
-
-                Vertex *va = face.vertices[0];
-                Vertex *vb = face.vertices[1];
-                Vertex *vc = face.vertices[2];
-
-                // Perspective-correct barycentric coordinate
-                Vec3 wp = Vec3(
-                    w.x / va->view_pos.z,
-                    w.y / vb->view_pos.z,
-                    w.z / vc->view_pos.z
-                );
-                wp /= dot(wp, Vec3(1, 1, 1));
-
-                Vec3 normal = (
-                      wp.x * va->normal
-                    + wp.y * vb->normal
-                    + wp.z * vc->normal
-                ).normalized();
-                if (dot(normal, frag.vision) < 0) continue;
-   
-                frag.depth = depth;
-                frag.normal = normal;
-                frag.color = color;
-                frag.is_light = is_light;
-                frag.shininess = shininess;
-                frag.is_nothing = false;
-                frag.view_pos =
-                      wp.x * va->view_pos
-                    + wp.y * vb->view_pos
-                    + wp.z * vc->view_pos;
+                update_frag(this->_fragment_buffer[index], w, face, color, is_light, shininess);
             }
         }
     }
