@@ -109,5 +109,38 @@ namespace proxima {
         mesh._vertex_normals.push_back((Vec3(0, -1, 0)));
         return mesh;
     }
+
+    Mesh Mesh::Torus(float thickness, int resolution) {
+        Mesh mesh;
+        mesh._has_normal = true;
+        int num_v_ring = resolution;
+        int num_rings = resolution / thickness;
+        float theta = 360.0 / num_v_ring;
+        float alpha = 360.0 / num_rings;
+        std::vector<Vec3> circle_v;
+        std::vector<Vec3> circle_n;
+        Vec3 v = Vec3(1, 0, 0);
+        for (int i=0; i<num_v_ring; i++) {
+            circle_n.push_back(v);
+            circle_v.push_back(Vec3(1, 0, 0) + v * thickness);
+            v = rotate(v, Vec3(0, 0, theta));
+        }
+        for (int i=0; i<num_rings; i++) {
+            for (int j=0; j<num_v_ring; j++) {
+                Vec3 eulers = Vec3(0, alpha * i, 0);
+                mesh._vertex_normals.push_back(rotate(circle_n[j], eulers));
+                mesh._vertices.push_back(rotate(circle_v[j], eulers));
+                int i_next = (i + 1) % num_rings;
+                int j_next = (j + 1) % num_v_ring;
+                int a = j + i * num_v_ring;
+                int b = j + i_next * num_v_ring;
+                int c = j_next + i_next * num_v_ring;
+                int d = j_next + i * num_v_ring;
+                mesh._face_indices.push_back({a, b, c, a, b, c});
+                mesh._face_indices.push_back({c, d, a, c, d, a});
+            }
+        }
+        return mesh;
+    }
 }
 

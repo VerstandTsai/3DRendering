@@ -22,6 +22,7 @@ namespace proxima {
         Mesh(std::string filename);
         static Mesh Cube();
         static Mesh Sphere(int resolution=20);
+        static Mesh Torus(float thickness=0.5, int resolution=20);
     };
 }
 

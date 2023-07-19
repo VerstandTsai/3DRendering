@@ -23,6 +23,9 @@ int main() {
     scene["light3"] = new PointLight(10, Vec3(0, 0, 1));
     scene["light3"]->position = Vec3(0, 7, 0);
 
+    scene["donut"] = new Object(Mesh::Torus());
+    scene["donut"]->position = Vec3(0, 5, 0);
+
     scene["monkey"] = new Object(Mesh("./static/suzanne.obj"));
     scene["monkey"]->position = Vec3(-5, 0, 0);
     scene["monkey"]->color = Vec3(0.2, 0.2, 1);
@@ -44,6 +47,7 @@ int main() {
         scene["light2"]->position = rotate(scene["light2"]->position, Vec3(0, 1, 0));
         scene["light3"]->position = rotate(scene["light3"]->position, Vec3(0, 0, 1));
 
+        scene["donut"]->euler_angles += Vec3(4, 0, 2);
         scene["monkey"]->euler_angles += Vec3(3, 4, 5);
         scene["cuboid"]->euler_angles += Vec3(5, 4, 3);
         scene["sphere"]->euler_angles += Vec3(0, 5, 0);
