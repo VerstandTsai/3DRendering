@@ -17,8 +17,9 @@ int main() {
     scene["light"]->position = Vec3(0, 4.8, 0);
 
     scene["teapot"] = new Object(Mesh("./static/teapot.obj"));
-    scene["teapot"]->scale = 1.5 * Vec3(1, 1, 1);
+    scene["teapot"]->scale = 1.2 * Vec3(1, 1, 1);
     scene["teapot"]->position = Vec3(0, -4.8, 0);
+    scene["teapot"]->euler_angles = Vec3(0, 90, 0);
 
     scene["floor"] = new Object(Mesh::Cube());
     scene["floor"]->scale = Vec3(10, 0.1, 10);
@@ -40,10 +41,7 @@ int main() {
     scene["right"]->scale = Vec3(0.1, 10, 10);
     scene["right"]->position = Vec3(5, 0, 0);
 
-    float t = 0;
     while (!window.closed()) {
-        scene["light"]->color = (Vec3(sin(t), sin(1.2*t), sin(0.8*t)) + Vec3(1, 1, 1)) / 2;
-        t += 0.1;
         control(window, scene.camera);
         window.draw(renderer.render(scene));
         show_fps();
