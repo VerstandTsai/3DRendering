@@ -81,7 +81,6 @@ namespace proxima {
         for (int i=0; i<num_rings; i++) {
             v = rotate(v, Vec3(0, 0, theta));
             for (int j=0; j<num_v_ring; j++) {
-                v = rotate(v, Vec3(0, theta, 0));
                 mesh._vertices.push_back(v);
                 mesh._vertex_normals.push_back(v);
                 int base_index = i * num_v_ring;
@@ -101,6 +100,7 @@ namespace proxima {
                     int bottom = num_v_total - 1;
                     mesh._face_indices.push_back({bottom, c, b, bottom, c, b});
                 }
+                v = rotate(v, Vec3(0, theta, 0));
             }
         }
         mesh._vertices.push_back(Vec3(0, 1, 0));
@@ -126,8 +126,8 @@ namespace proxima {
             v = rotate(v, Vec3(0, 0, theta));
         }
         for (int i=0; i<num_rings; i++) {
+            Vec3 eulers = Vec3(0, alpha * i, 0);
             for (int j=0; j<num_v_ring; j++) {
-                Vec3 eulers = Vec3(0, alpha * i, 0);
                 mesh._vertex_normals.push_back(rotate(circle_n[j], eulers));
                 mesh._vertices.push_back(rotate(circle_v[j], eulers));
                 int i_next = (i + 1) % num_rings;
