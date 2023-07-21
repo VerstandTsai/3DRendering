@@ -76,7 +76,9 @@ namespace proxima {
         float theta = 180.0 / resolution;
         int num_v_ring = resolution * 2;
         int num_rings = resolution - 1;
-        int num_v_total = num_v_ring * num_rings + 2;
+        int num_v_no_poles = num_v_ring * num_rings;
+        int top = num_v_no_poles;
+        int bottom = num_v_no_poles + 1;
         Vec3 v(0, 1, 0);
         for (int i=0; i<num_rings; i++) {
             v = rotate(v, Vec3(0, 0, theta));
@@ -90,14 +92,13 @@ namespace proxima {
                 a = b - num_v_ring;
                 d = c - num_v_ring;
                 if (i == 0) {
-                    int top = num_v_total - 2;
                     mesh._face_indices.push_back({top, b, c, top, b, c});
+                    v = rotate(v, Vec3(0, theta, 0));
                     continue;
                 }
                 mesh._face_indices.push_back({a, b, c, a, b, c});
                 mesh._face_indices.push_back({c, d, a, c, d, a});
                 if (i == num_rings - 1) {
-                    int bottom = num_v_total - 1;
                     mesh._face_indices.push_back({bottom, c, b, bottom, c, b});
                 }
                 v = rotate(v, Vec3(0, theta, 0));
