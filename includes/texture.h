@@ -14,6 +14,7 @@ namespace proxima {
     public:
         Texture(int width, int height);
         Vec3 at_uv(Vec3 uv);
+        static Texture Color(Vec3 color);
         static Texture Checker(int width, int height);
     };
 }

@@ -1,6 +1,7 @@
 #include "texture.h"
 #include "vec3.h"
 #include <vector>
+#include <cmath>
 
 namespace proxima {
     Texture::Texture(int width, int height) {
@@ -10,10 +11,16 @@ namespace proxima {
     }
 
     Vec3 Texture::at_uv(Vec3 uv) {
-        int x = uv.x * this->_width;
-        int y = uv.y * this->_height;
+        int x = fmin(uv.x * this->_width, this->_width - 1);
+        int y = fmin(uv.y * this->_height, this->_height - 1);
         int index = x + y * this->_width;
         return this->_data[index];
+    }
+
+    Texture Texture::Color(Vec3 color) {
+        Texture texture(1, 1);
+        texture._data[0] = color;
+        return texture;
     }
 
     Texture Texture::Checker(int width, int height) {
