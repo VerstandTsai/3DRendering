@@ -25,16 +25,28 @@ namespace proxima {
                 iss >> x >> y >> z;
                 this->_vertex_normals.push_back(Vec3(x, y, z).normalized());
             }
+            if (cmd == "vt") {
+                this->_has_uv = true;
+                float u, v;
+                iss >> u >> v;
+                this->_uv_coordinates.push_back(Vec3(u, v, 0));
+            }
             if (cmd == "f") {
-                if (this->_has_normal) {
+                if (this->_has_normal || this->_has_uv) {
                     std::array<int, 9> indices;
                     for (int i=0; i<3; i++) {
                         std::string index_pair;
                         iss >> index_pair;
-                        int vertex, normal;
-                        sscanf(index_pair.c_str(), "%d//%d", &vertex, &normal);
+                        int vertex, normal, uv;
+                        if (this->_has_normal && !(this->_has_uv))
+                            sscanf(index_pair.c_str(), "%d//%d", &vertex, &normal);
+                        if (!(this->_has_normal) && this->_has_uv)
+                            sscanf(index_pair.c_str(), "%d/%d", &vertex, &uv);
+                        if (this->_has_normal && this->_has_uv)
+                            sscanf(index_pair.c_str(), "%d/%d/%d", &vertex, &uv, &normal);
                         indices[i] = vertex - 1;
                         indices[i+3] = normal - 1;
+                        indices[i+6] = uv - 1;
                     }
                     this->_face_indices.push_back(indices);
                 } else {
