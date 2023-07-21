@@ -96,7 +96,7 @@ namespace proxima {
             for (int j=0; j<num_v_ring; j++) {
                 mesh._vertices.push_back(v);
                 mesh._vertex_normals.push_back(v);
-                mesh._uv_coordinates.push_back(Vec3(j * delta_u, (i + 1) * delta_v, 0));
+                mesh._uv_coordinates.push_back(Vec3(j * delta_u, 1 - (i + 1) * delta_v, 0));
 
                 int base_index = i * num_v_ring;
                 int a, b, c, d;
@@ -137,13 +137,13 @@ namespace proxima {
         mesh._vertex_normals.push_back((Vec3(0, 1, 0)));
         mesh._vertex_normals.push_back((Vec3(0, -1, 0)));
         for (int i=0; i<num_rings; i++) {
-            mesh._uv_coordinates.push_back(Vec3(1, (i + 1) * delta_v, 0));
-        }
-        for (int i=0; i<num_v_ring; i++) {
-            mesh._uv_coordinates.push_back(Vec3((i + 0.5) * delta_u, 0, 0));
+            mesh._uv_coordinates.push_back(Vec3(1, 1 - (i + 1) * delta_v, 0));
         }
         for (int i=0; i<num_v_ring; i++) {
             mesh._uv_coordinates.push_back(Vec3((i + 0.5) * delta_u, 1, 0));
+        }
+        for (int i=0; i<num_v_ring; i++) {
+            mesh._uv_coordinates.push_back(Vec3((i + 0.5) * delta_u, 0, 0));
         }
         return mesh;
     }
