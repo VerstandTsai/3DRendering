@@ -70,7 +70,7 @@ namespace proxima {
         std::vector<Face> faces;
         if (mesh.has_normal()) {
             std::map<std::array<int, 2>, Vertex*> vertex_table;
-            for (std::array<int, 6> face_index : mesh.face_indices()) {
+            for (std::array<int, 9> face_index : mesh.face_indices()) {
                 std::array<Vertex*, 3> face_vertices;
                 for (int i=0; i<3; i++) {
                     int vi = face_index[i];
@@ -88,7 +88,7 @@ namespace proxima {
                 vertices.push_back(entry.second);
             }
         } else {
-            for (std::array<int, 6> face_index : mesh.face_indices()) {
+            for (std::array<int, 9> face_index : mesh.face_indices()) {
                 Vec3 a = mesh.vertices()[face_index[0]];
                 Vec3 b = mesh.vertices()[face_index[1]];
                 Vec3 c = mesh.vertices()[face_index[2]];
