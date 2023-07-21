@@ -151,10 +151,17 @@ namespace proxima {
     Mesh Mesh::Torus(float thickness, int resolution) {
         Mesh mesh;
         mesh._has_normal = true;
+        mesh._has_uv = true;
+
         int num_v_ring = resolution;
         int num_rings = resolution / thickness;
+
         float theta = 360.0 / num_v_ring;
         float alpha = 360.0 / num_rings;
+
+        float delta_u = 1.0 / num_v_ring;
+        float delta_v = 1.0 / num_rings;
+
         std::vector<Vec3> circle_v;
         std::vector<Vec3> circle_n;
         Vec3 v = Vec3(1, 0, 0);
@@ -163,21 +170,44 @@ namespace proxima {
             circle_v.push_back(Vec3(1, 0, 0) + v * thickness);
             v = rotate(v, Vec3(0, 0, theta));
         }
+
         for (int i=0; i<num_rings; i++) {
             Vec3 eulers = Vec3(0, alpha * i, 0);
             for (int j=0; j<num_v_ring; j++) {
                 mesh._vertex_normals.push_back(rotate(circle_n[j], eulers));
                 mesh._vertices.push_back(rotate(circle_v[j], eulers));
+
                 int i_next = (i + 1) % num_rings;
                 int j_next = (j + 1) % num_v_ring;
                 int a = j + i * num_v_ring;
                 int b = j + i_next * num_v_ring;
                 int c = j_next + i_next * num_v_ring;
                 int d = j_next + i * num_v_ring;
-                mesh._face_indices.push_back({a, b, c, a, b, c});
-                mesh._face_indices.push_back({c, d, a, c, d, a});
+
+                int a_uv = j + i * (num_v_ring + 1);
+                int b_uv = a_uv + num_v_ring + 1;
+                int c_uv = b_uv + 1;
+                int d_uv = a_uv + 1;
+
+                mesh._face_indices.push_back({
+                    a, b, c,
+                    a, b, c,
+                    a_uv, b_uv, c_uv
+                });
+                mesh._face_indices.push_back({
+                    c, d, a,
+                    c, d, a,
+                    c_uv, d_uv, a_uv
+                });
             }
         }
+
+        for (int i=0; i<num_rings+1; i++) {
+            for (int j=0; j<num_v_ring+1; j++) {
+                mesh._uv_coordinates.push_back(Vec3(j * delta_u, i * delta_v, 0));
+            }
+        }
+
         return mesh;
     }
 }

@@ -23,7 +23,7 @@ int main() {
     scene["light3"] = new PointLight(10, Vec3(0, 0, 1));
     scene["light3"]->position = Vec3(0, 7, 0);
 
-    scene["donut"] = new Object(Mesh::Torus());
+    scene["donut"] = new Object(Mesh::Torus(), Texture::Checker(8, 16));
     scene["donut"]->position = Vec3(0, 5, 0);
 
     scene["monkey"] = new Object(Mesh("./static/suzanne.obj"));
@@ -34,9 +34,8 @@ int main() {
     scene["cuboid"]->position = Vec3(-2, 0, 0);
     scene["cuboid"]->texture = Texture::Color(Vec3(1, 1, 0));
 
-    scene["sphere"] = new Object(Mesh::Sphere());
+    scene["sphere"] = new Object(Mesh::Sphere(), Texture::Checker(16, 8));
     scene["sphere"]->position = Vec3(0, 0, 0);
-    scene["sphere"]->texture = Texture::Checker(16, 8);
 
     scene["teapot"] = new Object(Mesh("./static/teapot.obj"));
     scene["teapot"]->position = Vec3(5, 0, 0);
