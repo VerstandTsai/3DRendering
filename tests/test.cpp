@@ -28,19 +28,19 @@ int main() {
 
     scene["monkey"] = new Object(Mesh("./static/suzanne.obj"));
     scene["monkey"]->position = Vec3(-5, 0, 0);
-    scene["monkey"]->color = Vec3(0.2, 0.2, 1);
+    scene["monkey"]->texture = Texture::Color(Vec3(0.2, 0.2, 1));
 
     scene["cuboid"] = new Object();
     scene["cuboid"]->position = Vec3(-2, 0, 0);
-    scene["cuboid"]->color = Vec3(1, 1, 0);
+    scene["cuboid"]->texture = Texture::Color(Vec3(1, 1, 0));
 
     scene["sphere"] = new Object(Mesh::Sphere());
     scene["sphere"]->position = Vec3(0, 0, 0);
-    scene["sphere"]->color = Vec3(1, 0.2, 0.2);
+    scene["sphere"]->texture = Texture::Checker(16, 8);
 
     scene["teapot"] = new Object(Mesh("./static/teapot.obj"));
     scene["teapot"]->position = Vec3(5, 0, 0);
-    scene["teapot"]->color = Vec3(1, 0.5, 0.5);
+    scene["teapot"]->texture = Texture::Color(Vec3(1, 0.5, 0.5));
 
     while (!window.closed()) {
         scene["light1"]->position = rotate(scene["light1"]->position, Vec3(1, 0, 0));

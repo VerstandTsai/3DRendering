@@ -12,8 +12,8 @@ namespace proxima {
         std::vector<Vec3> _data;
 
     public:
-        Texture(int width, int height);
-        Vec3 at_uv(Vec3 uv);
+        Texture(int width=1, int height=1);
+        Vec3 at_uv(Vec3 uv) const;
         static Texture Color(Vec3 color);
         static Texture Checker(int width, int height);
     };

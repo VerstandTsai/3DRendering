@@ -1,5 +1,6 @@
 #pragma once
 
+#include "texture.h"
 #include "vec3.h"
 #include "objects.h"
 #include "scene.h"
@@ -51,7 +52,7 @@ namespace proxima {
         Mat4 _projection_matrix;
         void _calc_visions();
         void _calc_matrices();
-        void _rasterize(Face face, Vec3 color, bool is_light, float shininess);
+        void _rasterize(Face face, const Texture &texture, bool is_light, float shininess);
         Vec3 _shade(const Fragment &frag);
         void _render_object(const Object &obj);
 

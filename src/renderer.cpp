@@ -2,6 +2,7 @@
 #include "objects.h"
 #include "scene.h"
 #include "mesh.h"
+#include "texture.h"
 #include "vec3.h"
 #include <cmath>
 #include <algorithm>
@@ -180,7 +181,7 @@ namespace proxima {
 
         // Create the fragments
         for (Face face : new_faces) {
-            this->_rasterize(face, obj.color, obj.is_light(), obj.shininess);
+            this->_rasterize(face, obj.texture, obj.is_light(), obj.shininess);
         }
 
         // Clean up
@@ -189,7 +190,7 @@ namespace proxima {
         }
     }
 
-    void update_frag(Fragment &frag, Vec3 w, Face face, Vec3 color, bool is_light, float shininess) {
+    void update_frag(Fragment &frag, Vec3 w, Face face, const Texture &texture, bool is_light, float shininess) {
         Vertex *va = face.vertices[0];
         Vertex *vb = face.vertices[1];
         Vertex *vc = face.vertices[2];
@@ -229,10 +230,10 @@ namespace proxima {
               wp.x * va->uv
             + wp.y * vb->uv
             + wp.z * vc->uv;
-        frag.color = color;
+        frag.color = texture.at_uv(uv);
     }
 
-    void Renderer::_rasterize(Face face, Vec3 color, bool is_light, float shininess) {
+    void Renderer::_rasterize(Face face, const Texture &texture, bool is_light, float shininess) {
         std::sort(face.vertices.begin(), face.vertices.end(),
             [](Vertex *a, Vertex *b) {
                 return a->position.y < b->position.y;
@@ -262,7 +263,7 @@ namespace proxima {
                 float tx = (float)(x - xac) / (xb - xac);
                 Vec3 w = lerp(wac, wb, tx); // The barycentric coordinate
                 int index = x + y * this->_width;
-                update_frag(this->_fragment_buffer[index], w, face, color, is_light, shininess);
+                update_frag(this->_fragment_buffer[index], w, face, texture, is_light, shininess);
             }
         }
     }

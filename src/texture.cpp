@@ -10,7 +10,7 @@ namespace proxima {
         this->_data = std::vector<Vec3>(width * height);
     }
 
-    Vec3 Texture::at_uv(Vec3 uv) {
+    Vec3 Texture::at_uv(Vec3 uv) const {
         int x = fmin(uv.x * this->_width, this->_width - 1);
         int y = fmin(uv.y * this->_height, this->_height - 1);
         int index = x + y * this->_width;
@@ -25,8 +25,12 @@ namespace proxima {
 
     Texture Texture::Checker(int width, int height) {
         Texture texture(width, height);
-        for (int i=0; i<texture._data.size(); i++) {
-            texture._data[i] = (i % 2) * Vec3(1, 1, 1);
+        int index = 0;
+        for (int i=0; i<height; i++) {
+            for (int j=0; j<width; j++) {
+                texture._data[index] = ((i + j) % 2) * Vec3(1, 1, 1);
+                index++;
+            }
         }
         return texture;
     }
