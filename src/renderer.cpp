@@ -69,18 +69,20 @@ namespace proxima {
         std::vector<Vertex*> vertices;
         std::vector<Face> faces;
         if (mesh.has_normal()) {
-            std::map<std::array<int, 2>, Vertex*> vertex_table;
+            std::map<std::array<int, 3>, Vertex*> vertex_table;
             for (std::array<int, 9> face_index : mesh.face_indices()) {
                 std::array<Vertex*, 3> face_vertices;
                 for (int i=0; i<3; i++) {
                     int vi = face_index[i];
                     int ni = face_index[i+3];
-                    if (!vertex_table.contains({vi, ni})) {
+                    int ti = (mesh.has_uv() ? face_index[i+6] : 0);
+                    if (!vertex_table.contains({vi, ni, ti})) {
                         Vec3 v = mesh.vertices()[vi];
                         Vec3 n = mesh.vertex_normals()[ni];
-                        vertex_table[{vi, ni}] = new Vertex(v, n);
+                        Vec3 t = (mesh.has_uv() ? mesh.uv_coordinates()[ti] : Vec3());
+                        vertex_table[{vi, ni, ti}] = new Vertex(v, n, t);
                     }
-                    face_vertices[i] = vertex_table[{vi, ni}];
+                    face_vertices[i] = vertex_table[{vi, ni, ti}];
                 }
                 faces.push_back(Face(face_vertices));
             }
@@ -124,8 +126,9 @@ namespace proxima {
                     float t = a->position.z / (a->position.z - b->position.z);
                     Vec4 new_pos = lerp(a->position, b->position, t);
                     Vec3 new_normal = lerp(a->normal, b->normal, t).normalized();
+                    Vec3 new_uv = lerp(a->uv, b->uv, t);
                     Vec3 new_view_pos = lerp(a->view_pos, b->view_pos, t);
-                    Vertex *new_vertex = new Vertex(new_pos, new_normal, new_view_pos);
+                    Vertex *new_vertex = new Vertex(new_pos, new_normal, new_uv, new_view_pos);
                     face_vertices.push_back(new_vertex);
                     new_vertices.insert(new_vertex);
                 }
@@ -214,7 +217,6 @@ namespace proxima {
 
         frag.depth = depth;
         frag.normal = normal;
-        frag.color = color;
         frag.is_light = is_light;
         frag.shininess = shininess;
         frag.is_nothing = false;
@@ -222,6 +224,12 @@ namespace proxima {
               wp.x * va->view_pos
             + wp.y * vb->view_pos
             + wp.z * vc->view_pos;
+
+        Vec3 uv =
+              wp.x * va->uv
+            + wp.y * vb->uv
+            + wp.z * vc->uv;
+        frag.color = color;
     }
 
     void Renderer::_rasterize(Face face, Vec3 color, bool is_light, float shininess) {
