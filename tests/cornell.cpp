@@ -24,20 +24,23 @@ int main() {
     scene["floor"] = new Object(Mesh::Cube());
     scene["floor"]->scale = Vec3(10, 0.1, 10);
     scene["floor"]->position = Vec3(0, -5, 0);
+    scene["floor"]->shininess = 1;
 
     scene["ceiling"] = new Object(Mesh::Cube());
     scene["ceiling"]->scale = Vec3(10, 0.1, 10);
     scene["ceiling"]->position = Vec3(0, 5, 0);
+    scene["ceiling"]->shininess = 1;
 
     scene["back"] = new Object(Mesh::Cube());
     scene["back"]->scale = Vec3(10, 10, 0.1);
     scene["back"]->position = Vec3(0, 0, -5);
+    scene["back"]->shininess = 1;
 
-    scene["left"] = new Object(Mesh::Cube(), Vec3(1, 0.2, 0.2));
+    scene["left"] = new Object(Mesh::Cube(), Texture::Color(Vec3(1, 0.2, 0.2)), 1);
     scene["left"]->scale = Vec3(0.1, 10, 10);
     scene["left"]->position = Vec3(-5, 0, 0);
 
-    scene["right"] = new Object(Mesh::Cube(), Vec3(0.2, 1, 0.2));
+    scene["right"] = new Object(Mesh::Cube(), Texture::Color(Vec3(0.2, 1, 0.2)), 1);
     scene["right"]->scale = Vec3(0.1, 10, 10);
     scene["right"]->position = Vec3(5, 0, 0);
 

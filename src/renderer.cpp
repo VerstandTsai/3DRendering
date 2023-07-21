@@ -286,9 +286,8 @@ namespace proxima {
 
             // Diffuse reflection
             float ln = dot(light, frag.normal);
-            diffuse += fmax(0, ln) * light_color;
-
             if (ln < 0) continue;
+            diffuse += ln * light_color;
 
             // Specular reflection
             Vec3 reflection = 2 * ln * frag.normal - light;
