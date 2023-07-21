@@ -1,5 +1,6 @@
 #pragma once
 
+#include "texture.h"
 #include "vec3.h"
 #include "objects.h"
 #include "scene.h"
@@ -11,9 +12,10 @@ namespace proxima {
     public:
         Vec4 position;
         Vec3 normal;
+        Vec3 uv;
         Vec3 view_pos;
-        Vertex(Vec4 position=Vec4(), Vec3 normal=Vec3(0, 0, 1), Vec3 view_pos=Vec3()) :
-            position(position), normal(normal), view_pos(view_pos) {}
+        Vertex(Vec4 position=Vec4(), Vec3 normal=Vec3(0, 0, 1), Vec3 uv=Vec3(), Vec3 view_pos=Vec3()) :
+            position(position), normal(normal), uv(uv), view_pos(view_pos) {}
     };
 
     class Face {
@@ -50,7 +52,7 @@ namespace proxima {
         Mat4 _projection_matrix;
         void _calc_visions();
         void _calc_matrices();
-        void _rasterize(Face face, Vec3 color, bool is_light, float shininess);
+        void _rasterize(Face face, const Texture &texture, bool is_light, float shininess);
         Vec3 _shade(const Fragment &frag);
         void _render_object(const Object &obj);
 

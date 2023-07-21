@@ -2,6 +2,7 @@
 #include "objects.h"
 #include "scene.h"
 #include "mesh.h"
+#include "texture.h"
 #include "vec3.h"
 #include <cmath>
 #include <algorithm>
@@ -69,18 +70,20 @@ namespace proxima {
         std::vector<Vertex*> vertices;
         std::vector<Face> faces;
         if (mesh.has_normal()) {
-            std::map<std::array<int, 2>, Vertex*> vertex_table;
-            for (std::array<int, 6> face_index : mesh.face_indices()) {
+            std::map<std::array<int, 3>, Vertex*> vertex_table;
+            for (std::array<int, 9> face_index : mesh.face_indices()) {
                 std::array<Vertex*, 3> face_vertices;
                 for (int i=0; i<3; i++) {
                     int vi = face_index[i];
                     int ni = face_index[i+3];
-                    if (!vertex_table.contains({vi, ni})) {
+                    int ti = (mesh.has_uv() ? face_index[i+6] : 0);
+                    if (!vertex_table.contains({vi, ni, ti})) {
                         Vec3 v = mesh.vertices()[vi];
                         Vec3 n = mesh.vertex_normals()[ni];
-                        vertex_table[{vi, ni}] = new Vertex(v, n);
+                        Vec3 t = (mesh.has_uv() ? mesh.uv_coordinates()[ti] : Vec3());
+                        vertex_table[{vi, ni, ti}] = new Vertex(v, n, t);
                     }
-                    face_vertices[i] = vertex_table[{vi, ni}];
+                    face_vertices[i] = vertex_table[{vi, ni, ti}];
                 }
                 faces.push_back(Face(face_vertices));
             }
@@ -88,7 +91,7 @@ namespace proxima {
                 vertices.push_back(entry.second);
             }
         } else {
-            for (std::array<int, 6> face_index : mesh.face_indices()) {
+            for (std::array<int, 9> face_index : mesh.face_indices()) {
                 Vec3 a = mesh.vertices()[face_index[0]];
                 Vec3 b = mesh.vertices()[face_index[1]];
                 Vec3 c = mesh.vertices()[face_index[2]];
@@ -124,8 +127,9 @@ namespace proxima {
                     float t = a->position.z / (a->position.z - b->position.z);
                     Vec4 new_pos = lerp(a->position, b->position, t);
                     Vec3 new_normal = lerp(a->normal, b->normal, t).normalized();
+                    Vec3 new_uv = lerp(a->uv, b->uv, t);
                     Vec3 new_view_pos = lerp(a->view_pos, b->view_pos, t);
-                    Vertex *new_vertex = new Vertex(new_pos, new_normal, new_view_pos);
+                    Vertex *new_vertex = new Vertex(new_pos, new_normal, new_uv, new_view_pos);
                     face_vertices.push_back(new_vertex);
                     new_vertices.insert(new_vertex);
                 }
@@ -177,7 +181,7 @@ namespace proxima {
 
         // Create the fragments
         for (Face face : new_faces) {
-            this->_rasterize(face, obj.color, obj.is_light(), obj.shininess);
+            this->_rasterize(face, obj.texture, obj.is_light(), obj.shininess);
         }
 
         // Clean up
@@ -186,7 +190,7 @@ namespace proxima {
         }
     }
 
-    void update_frag(Fragment &frag, Vec3 w, Face face, Vec3 color, bool is_light, float shininess) {
+    void update_frag(Fragment &frag, Vec3 w, Face face, const Texture &texture, bool is_light, float shininess) {
         Vertex *va = face.vertices[0];
         Vertex *vb = face.vertices[1];
         Vertex *vc = face.vertices[2];
@@ -214,7 +218,6 @@ namespace proxima {
 
         frag.depth = depth;
         frag.normal = normal;
-        frag.color = color;
         frag.is_light = is_light;
         frag.shininess = shininess;
         frag.is_nothing = false;
@@ -222,9 +225,15 @@ namespace proxima {
               wp.x * va->view_pos
             + wp.y * vb->view_pos
             + wp.z * vc->view_pos;
+
+        Vec3 uv =
+              wp.x * va->uv
+            + wp.y * vb->uv
+            + wp.z * vc->uv;
+        frag.color = texture.at_uv(uv);
     }
 
-    void Renderer::_rasterize(Face face, Vec3 color, bool is_light, float shininess) {
+    void Renderer::_rasterize(Face face, const Texture &texture, bool is_light, float shininess) {
         std::sort(face.vertices.begin(), face.vertices.end(),
             [](Vertex *a, Vertex *b) {
                 return a->position.y < b->position.y;
@@ -254,7 +263,7 @@ namespace proxima {
                 float tx = (float)(x - xac) / (xb - xac);
                 Vec3 w = lerp(wac, wb, tx); // The barycentric coordinate
                 int index = x + y * this->_width;
-                update_frag(this->_fragment_buffer[index], w, face, color, is_light, shininess);
+                update_frag(this->_fragment_buffer[index], w, face, texture, is_light, shininess);
             }
         }
     }

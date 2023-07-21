@@ -13,7 +13,7 @@ all: libprox.a
 %: $(TESTS)/%.cpp libprox.a $(INC)/proxima.h
 	$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS) $(LDLIBS)
 
-libprox.a: window.o renderer.o vec3.o objects.o mesh.o scene.o
+libprox.a: window.o renderer.o vec3.o objects.o mesh.o texture.o scene.o
 	$(AR) -rcs $@ $^
 
 %.o: $(SRC)/%.cpp $(INC)/%.h

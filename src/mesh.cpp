@@ -27,7 +27,7 @@ namespace proxima {
             }
             if (cmd == "f") {
                 if (this->_has_normal) {
-                    std::array<int, 6> indices;
+                    std::array<int, 9> indices;
                     for (int i=0; i<3; i++) {
                         std::string index_pair;
                         iss >> index_pair;
@@ -73,33 +73,61 @@ namespace proxima {
     Mesh Mesh::Sphere(int resolution) {
         Mesh mesh;
         mesh._has_normal = true;
+        mesh._has_uv = true;
+
         float theta = 180.0 / resolution;
         int num_v_ring = resolution * 2;
         int num_rings = resolution - 1;
         int num_v_no_poles = num_v_ring * num_rings;
-        int top = num_v_no_poles;
-        int bottom = num_v_no_poles + 1;
+
+        int north = num_v_no_poles;
+        int south = num_v_no_poles + 1;
+
+        int uv_index_right = num_v_no_poles;
+        int uv_index_north = uv_index_right + num_rings;
+        int uv_index_south = uv_index_north + num_v_ring;
+
+        float delta_u = 1.0 / num_v_ring;
+        float delta_v = 1.0 / resolution;
+
         Vec3 v(0, 1, 0);
         for (int i=0; i<num_rings; i++) {
             v = rotate(v, Vec3(0, 0, theta));
             for (int j=0; j<num_v_ring; j++) {
                 mesh._vertices.push_back(v);
                 mesh._vertex_normals.push_back(v);
+                mesh._uv_coordinates.push_back(Vec3(j * delta_u, 1 - (i + 1) * delta_v, 0));
+
                 int base_index = i * num_v_ring;
                 int a, b, c, d;
                 b = j + base_index;
                 c = (j+1) % num_v_ring + base_index;
                 a = b - num_v_ring;
                 d = c - num_v_ring;
-                if (i == 0) {
-                    mesh._face_indices.push_back({top, b, c, top, b, c});
-                    v = rotate(v, Vec3(0, theta, 0));
-                    continue;
+
+                int c_uv = c;
+                int d_uv = d;
+                if (j == num_v_ring - 1) {
+                    c_uv = uv_index_right + i;
+                    d_uv = c_uv - 1;
                 }
-                mesh._face_indices.push_back({a, b, c, a, b, c});
-                mesh._face_indices.push_back({c, d, a, c, d, a});
-                if (i == num_rings - 1) {
-                    mesh._face_indices.push_back({bottom, c, b, bottom, c, b});
+
+                if (i == 0) {
+                    mesh._face_indices.push_back({
+                        north, b, c,
+                        north, b, c,
+                        uv_index_north + j, b, c_uv
+                    });
+                } else {
+                    mesh._face_indices.push_back({a, b, c, a, b, c, a, b, c_uv});
+                    mesh._face_indices.push_back({c, d, a, c, d, a, c_uv, d_uv, a});
+                    if (i == num_rings - 1) {
+                        mesh._face_indices.push_back({
+                            south, c, b,
+                            south, c, b,
+                            uv_index_south + j, c_uv, b
+                        });
+                    }
                 }
                 v = rotate(v, Vec3(0, theta, 0));
             }
@@ -108,6 +136,15 @@ namespace proxima {
         mesh._vertices.push_back(Vec3(0, -1, 0));
         mesh._vertex_normals.push_back((Vec3(0, 1, 0)));
         mesh._vertex_normals.push_back((Vec3(0, -1, 0)));
+        for (int i=0; i<num_rings; i++) {
+            mesh._uv_coordinates.push_back(Vec3(1, 1 - (i + 1) * delta_v, 0));
+        }
+        for (int i=0; i<num_v_ring; i++) {
+            mesh._uv_coordinates.push_back(Vec3((i + 0.5) * delta_u, 1, 0));
+        }
+        for (int i=0; i<num_v_ring; i++) {
+            mesh._uv_coordinates.push_back(Vec3((i + 0.5) * delta_u, 0, 0));
+        }
         return mesh;
     }
 

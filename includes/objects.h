@@ -2,6 +2,7 @@
 
 #include "vec3.h"
 #include "mesh.h"
+#include "texture.h"
 #include <array>
 #include <vector>
 
@@ -15,13 +16,13 @@ namespace proxima {
         Vec3 position;
         Vec3 euler_angles;
         Vec3 scale;
-        Vec3 color;
+        Texture texture;
         int shininess;
         const Mesh &mesh() const { return this->_mesh; }
         bool is_light() const { return this->_is_light; }
         Object(
             Mesh mesh=Mesh::Cube(),
-            Vec3 color=Vec3(1, 1, 1),
+            Texture texture=Texture::Color(Vec3(1, 1, 1)),
             int shininess=32
         );
     };
@@ -36,6 +37,7 @@ namespace proxima {
 
     class PointLight : public Object {
     public:
+        Vec3 color;
         float intensity;
         PointLight(float intensity=20, Vec3 color=Vec3(1, 1, 1));
     };
