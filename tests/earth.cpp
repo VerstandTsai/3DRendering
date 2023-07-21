@@ -12,7 +12,7 @@ int main() {
     Scene scene;
 
     scene["sun"] = new PointLight(200);
-    scene["earth"] = new Object(Mesh::Sphere(), Texture("./static/map.ppm"));
+    scene["earth"] = new Object(Mesh::Sphere(), Texture("./static/map.png"));
     scene["earth"]->position = Vec3(10, 0, 0);
     scene["earth"]->euler_angles = Vec3(0, 0, 23.5);
 

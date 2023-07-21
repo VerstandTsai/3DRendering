@@ -26,14 +26,14 @@ int main() {
     scene["donut"] = new Object(Mesh::Torus(), Texture::Checker(8, 16));
     scene["donut"]->position = Vec3(0, 5, 0);
 
-    scene["monkey"] = new Object(Mesh("./static/suzanne.obj"), Texture("./static/suzanne_texture.ppm"));
+    scene["monkey"] = new Object(Mesh("./static/suzanne.obj"), Texture("./static/suzanne_texture.png"));
     scene["monkey"]->position = Vec3(-5, 0, 0);
 
     scene["cuboid"] = new Object();
     scene["cuboid"]->position = Vec3(-2, 0, 0);
     scene["cuboid"]->texture = Texture::Color(Vec3(1, 1, 0));
 
-    scene["sphere"] = new Object(Mesh::Sphere(), Texture("./static/map.ppm"));
+    scene["sphere"] = new Object(Mesh::Sphere(), Texture("./static/map.png"));
     scene["sphere"]->position = Vec3(0, 0, 0);
 
     scene["teapot"] = new Object(Mesh("./static/teapot.obj"));

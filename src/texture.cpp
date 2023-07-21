@@ -1,10 +1,12 @@
 #include "texture.h"
 #include "vec3.h"
 
-#include <fstream>
 #include <string>
 #include <vector>
 #include <cmath>
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
 
 namespace proxima {
     Texture::Texture(int width, int height) {
@@ -14,23 +16,17 @@ namespace proxima {
     }
 
     Texture::Texture(std::string filename) {
-        std::ifstream image(filename);
-        std::string header;
-
         int width, height, depth;
-        image >> header >> width >> height >> depth;
+        unsigned char *image = stbi_load(filename.c_str(), &width, &height, &depth, 3);
         this->_width = width;
         this->_height = height;
-
-        image.get();
-        for (int i=0; i<height; i++) {
-            for (int j=0; j<width; j++) {
-                int r = image.get();
-                int g = image.get();
-                int b = image.get();
-                this->_data.push_back(Vec3(r, g, b) / 255);
-            }
+        for (int i=0; i<width*height*3; i+=3) {
+            int r = image[i];
+            int g = image[i+1];
+            int b = image[i+2];
+            this->_data.push_back(Vec3(r, g, b) / 255);
         }
+        stbi_image_free(image);
     }
 
     Vec3 Texture::at_uv(Vec3 uv) const {
