@@ -2,7 +2,7 @@ INC = ./includes
 SRC = ./src
 TESTS = ./tests
 CXX = g++
-CXXFLAGS = -Wall -g -std=c++2a -O3 -ffast-math -I$(INC)
+CXXFLAGS = -Wall -g -pg -std=c++2a -O3 -ffast-math -I$(INC)
 LDFLAGS = -L.
 LDLIBS = -lprox -lSDL2
 AR = ar

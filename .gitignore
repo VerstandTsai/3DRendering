@@ -5,4 +5,5 @@
 *.a
 *.o
 compile_flags.txt
+gmon.out
 

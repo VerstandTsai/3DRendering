@@ -234,11 +234,14 @@ namespace proxima {
     }
 
     void Renderer::_rasterize(Face face, const Texture &texture, bool is_light, float shininess) {
-        std::sort(face.vertices.begin(), face.vertices.end(),
-            [](Vertex *a, Vertex *b) {
-                return a->position.y < b->position.y;
-            }
-        );
+        // Sort the vertices by y-value
+        if (face.vertices[0]->position.y > face.vertices[1]->position.y)
+            std::swap(face.vertices[0], face.vertices[1]);
+        if (face.vertices[0]->position.y > face.vertices[2]->position.y)
+            std::swap(face.vertices[0], face.vertices[2]);
+        if (face.vertices[1]->position.y > face.vertices[2]->position.y)
+            std::swap(face.vertices[1], face.vertices[2]);
+
         Vec3 a = face.vertices[0]->position;
         Vec3 b = face.vertices[1]->position;
         Vec3 c = face.vertices[2]->position;

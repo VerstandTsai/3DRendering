@@ -29,15 +29,6 @@ namespace proxima {
         stbi_image_free(image);
     }
 
-    Vec3 Texture::at_uv(Vec3 uv) const {
-        float u = uv.x;
-        float v = 1 - uv.y;
-        int x = fmin(u * this->_width, this->_width - 1);
-        int y = fmin(v * this->_height, this->_height - 1);
-        int index = x + y * this->_width;
-        return this->_data[index];
-    }
-
     Texture Texture::Color(Vec3 color) {
         Texture texture(1, 1);
         texture._data[0] = color;
