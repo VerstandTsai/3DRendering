@@ -50,7 +50,7 @@ namespace proxima {
         Mat4 _view_rotation;
         Mat4 _view_matrix;
         Mat4 _projection_matrix;
-        void _calc_visions();
+        void _init_fragment_buffer();
         void _calc_matrices();
         void _rasterize(Face face, const Texture &texture, bool is_light, float shininess);
         Vec3 _shade(const Fragment &frag);

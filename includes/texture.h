@@ -28,6 +28,5 @@ namespace proxima {
         int index = x + y * this->_width;
         return this->_data[index];
     }
-
 }
 

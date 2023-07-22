@@ -53,14 +53,16 @@ namespace proxima {
         }}});
     }
 
-    void Renderer::_calc_visions() {
+    void Renderer::_init_fragment_buffer() {
         int half_width = this->_width >> 1;
         int half_height = this->_height >> 1;
         float z = -half_height / tan(deg2rad(this->_scene->camera.fov / 2));
         int index = 0;
         for (int y=half_height; y>-half_height; y--) {
             for (int x=-half_width; x<half_width; x++) {
-                this->_fragment_buffer[index].vision = -Vec3(x, y, z).normalized();
+                Fragment frag;
+                frag.vision = -Vec3(x, y, z).normalized();
+                this->_fragment_buffer[index] = frag;
                 index++;
             }
         }
@@ -302,12 +304,8 @@ namespace proxima {
     }
 
     int *Renderer::render(const Scene &scene) {
-        for (int i=0; i<this->_num_pixels; i++) {
-            this->_fragment_buffer[i] = Fragment();
-            this->_frame_buffer[i] = color2rgba(scene.bg_color);
-        }
         this->_scene = &scene;
-        this->_calc_visions();
+        this->_init_fragment_buffer();
         this->_calc_matrices();
         this->_light_sources.clear();
         for (auto &obj_entry : scene.objects()) {
