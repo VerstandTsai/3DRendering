@@ -60,6 +60,10 @@ namespace proxima {
 
     Mesh Mesh::Cube() {
         Mesh mesh;
+        mesh._has_normal = true;
+        mesh._has_uv = true;
+
+        // Create vertices
         for (int i=0; i<2; i++) {
             for (int j=0; j<2; j++) {
                 for (int k=0; k<2; k++) {
@@ -67,18 +71,48 @@ namespace proxima {
                 }
             }
         }
-        mesh._face_indices.push_back({0, 1, 3});
-        mesh._face_indices.push_back({3, 2, 0});
-        mesh._face_indices.push_back({0, 2, 6});
-        mesh._face_indices.push_back({6, 4, 0});
-        mesh._face_indices.push_back({0, 4, 5});
-        mesh._face_indices.push_back({5, 1, 0});
-        mesh._face_indices.push_back({1, 5, 7});
-        mesh._face_indices.push_back({7, 3, 1});
-        mesh._face_indices.push_back({2, 3, 7});
-        mesh._face_indices.push_back({7, 6, 2});
-        mesh._face_indices.push_back({5, 4, 6});
-        mesh._face_indices.push_back({6, 7, 5});
+
+        // Create normals
+        mesh._vertex_normals.push_back(Vec3( 1,  0,  0)); // Right
+        mesh._vertex_normals.push_back(Vec3(-1,  0,  0)); // Left
+        mesh._vertex_normals.push_back(Vec3( 0,  1,  0)); // Top
+        mesh._vertex_normals.push_back(Vec3( 0, -1,  0)); // Bottom
+        mesh._vertex_normals.push_back(Vec3( 0,  0,  1)); // Front
+        mesh._vertex_normals.push_back(Vec3( 0,  0, -1)); // Back
+        
+        // Create UVs
+        float delta_u = 1.0 / 4;
+        float delta_v = 1.0 / 3;
+        for (int i=0; i<4; i++) {
+            for (int j=0; j<5; j++) {
+                mesh._uv_coordinates.push_back(Vec3(j * delta_u, i * delta_v, 0));
+            }
+        }
+
+        // Right (+x)
+        mesh._face_indices.push_back({7, 5, 4, 0, 0, 0, 12, 7, 8});
+        mesh._face_indices.push_back({4, 6, 7, 0, 0, 0, 8, 13, 12});
+
+        // Left (-x)
+        mesh._face_indices.push_back({2, 0, 1, 1, 1, 1, 10, 5, 6});
+        mesh._face_indices.push_back({1, 3, 2, 1, 1, 1, 6, 11, 10});
+
+        // Top (+y)
+        mesh._face_indices.push_back({2, 3, 7, 2, 2, 2, 16, 11, 12});
+        mesh._face_indices.push_back({7, 6, 2, 2, 2, 2, 12, 17, 16});
+
+        // Bottom (-y)
+        mesh._face_indices.push_back({1, 0, 4, 3, 3, 3, 6, 1, 2});
+        mesh._face_indices.push_back({4, 5, 1, 3, 3, 3, 2, 7, 6});
+
+        // Front (+z)
+        mesh._face_indices.push_back({3, 1, 5, 4, 4, 4, 11, 6, 7});
+        mesh._face_indices.push_back({5, 7, 3, 4, 4, 4, 7, 12, 11});
+
+        // Back (-z)
+        mesh._face_indices.push_back({6, 4, 0, 5, 5, 5, 13, 8, 9});
+        mesh._face_indices.push_back({0, 2, 6, 5, 5, 5, 9, 14, 13});
+
         return mesh;
     }
 

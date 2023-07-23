@@ -29,16 +29,15 @@ int main() {
     scene["monkey"] = new Object(Mesh("./static/suzanne.obj"), Texture("./static/suzanne_texture.png"));
     scene["monkey"]->position = Vec3(-5, 0, 0);
 
-    scene["cuboid"] = new Object();
+    scene["cuboid"] = new Object(Mesh::Cube(), Texture("./static/cube_texture.png"));
     scene["cuboid"]->position = Vec3(-2, 0, 0);
-    scene["cuboid"]->texture = Texture::Color(Vec3(1, 1, 0));
 
     scene["sphere"] = new Object(Mesh::Sphere(), Texture("./static/map.png"));
     scene["sphere"]->position = Vec3(0, 0, 0);
 
-    scene["teapot"] = new Object(Mesh("./static/teapot.obj"));
+    scene["teapot"] = new Object(Mesh("./static/teapot.obj"), Texture::Color(Vec3(0.8, 0.8, 0.8)));
     scene["teapot"]->position = Vec3(5, 0, 0);
-    scene["teapot"]->texture = Texture::Color(Vec3(1, 0.5, 0.5));
+    scene["teapot"]->euler_angles = Vec3(0, 90, 0);
 
     while (!window.closed()) {
         scene["light1"]->position = rotate(scene["light1"]->position, Vec3(1, 0, 0));
@@ -46,10 +45,7 @@ int main() {
         scene["light3"]->position = rotate(scene["light3"]->position, Vec3(0, 0, 1));
 
         scene["donut"]->euler_angles += Vec3(4, 0, 2);
-        scene["monkey"]->euler_angles += Vec3(3, 4, 5);
-        scene["cuboid"]->euler_angles += Vec3(5, 4, 3);
         scene["sphere"]->euler_angles += Vec3(0, 5, 0);
-        scene["teapot"]->euler_angles += Vec3(3, 5, 4);
 
         control(window, scene.camera);
         window.draw(renderer.render(scene));
