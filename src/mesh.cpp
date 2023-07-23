@@ -171,12 +171,12 @@ namespace proxima {
         float theta = 360.0 / num_v_ring;
         float alpha = 360.0 / num_rings;
 
-        float delta_u = 1.0 / num_v_ring;
-        float delta_v = 1.0 / num_rings;
+        float delta_u = 1.0 / num_rings;
+        float delta_v = 1.0 / num_v_ring;
 
         std::vector<Vec3> circle_v;
         std::vector<Vec3> circle_n;
-        Vec3 v = Vec3(1, 0, 0);
+        Vec3 v = Vec3(-1, 0, 0);
         for (int i=0; i<num_v_ring; i++) {
             circle_n.push_back(v);
             circle_v.push_back(Vec3(1, 0, 0) + v * thickness);
@@ -216,7 +216,7 @@ namespace proxima {
 
         for (int i=0; i<num_rings+1; i++) {
             for (int j=0; j<num_v_ring+1; j++) {
-                mesh._uv_coordinates.push_back(Vec3(j * delta_u, i * delta_v, 0));
+                mesh._uv_coordinates.push_back(Vec3(i * delta_u, j * delta_v, 0));
             }
         }
 
