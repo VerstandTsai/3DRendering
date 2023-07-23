@@ -33,8 +33,8 @@ namespace proxima {
         Vec3 vision;
         float shininess;
         bool is_light;
-        bool is_nothing;
-        Fragment(float depth=1, bool is_nothing=true) : depth(depth), is_nothing(is_nothing) {}
+        bool is_skybox;
+        Fragment(float depth=1, bool is_skybox=false) : depth(depth), is_skybox(is_skybox) {}
     };
 
     class Renderer {
@@ -52,9 +52,9 @@ namespace proxima {
         Mat4 _projection_matrix;
         void _init_fragment_buffer();
         void _calc_matrices();
-        void _rasterize(Face face, const Texture &texture, bool is_light, float shininess);
+        void _rasterize(Face face, const Texture &texture, bool is_skybox, bool is_light, float shininess);
         Vec3 _shade(const Fragment &frag);
-        void _render_object(const Object &obj);
+        void _render_object(const Object &obj, bool is_skybox);
 
     public:
         Renderer(int width, int height);

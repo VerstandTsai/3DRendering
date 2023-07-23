@@ -149,7 +149,7 @@ namespace proxima {
         return {new_vertices, new_faces};
     }
 
-    void Renderer::_render_object(const Object &obj) {
+    void Renderer::_render_object(const Object &obj, bool is_skybox) {
         auto [vertices, faces] = make_vf(obj.mesh());
 
         // Project the vertices to clip space
@@ -183,7 +183,7 @@ namespace proxima {
 
         // Create the fragments
         for (Face face : new_faces) {
-            this->_rasterize(face, obj.texture, obj.is_light(), obj.shininess);
+            this->_rasterize(face, obj.texture, is_skybox, obj.is_light(), obj.shininess);
         }
 
         // Clean up
@@ -192,16 +192,10 @@ namespace proxima {
         }
     }
 
-    void update_frag(Fragment &frag, Vec3 w, Face face, const Texture &texture, bool is_light, float shininess) {
+    void update_frag(Fragment &frag, Vec3 w, Face face, const Texture &texture, bool is_skybox, bool is_light, float shininess) {
         Vertex *va = face.vertices[0];
         Vertex *vb = face.vertices[1];
         Vertex *vc = face.vertices[2];
-
-        float depth =
-              w.x * va->position.z
-            + w.y * vb->position.z
-            + w.z * vc->position.z;
-        if (depth > frag.depth) return;
 
         // Perspective-correct barycentric coordinate
         Vec3 wp = Vec3(
@@ -210,6 +204,23 @@ namespace proxima {
             w.z / vc->view_pos.z
         );
         wp /= dot(wp, Vec3(1, 1, 1));
+
+        Vec3 uv =
+              wp.x * va->uv
+            + wp.y * vb->uv
+            + wp.z * vc->uv;
+
+        if (is_skybox) {
+            frag.is_skybox = true;
+            frag.color = texture.at_uv(uv);
+            return;
+        }
+
+        float depth =
+              w.x * va->position.z
+            + w.y * vb->position.z
+            + w.z * vc->position.z;
+        if (depth > frag.depth) return;
 
         Vec3 normal = (
               wp.x * va->normal
@@ -220,22 +231,17 @@ namespace proxima {
 
         frag.depth = depth;
         frag.normal = normal;
+        frag.is_skybox = false;
         frag.is_light = is_light;
         frag.shininess = shininess;
-        frag.is_nothing = false;
         frag.view_pos =
               wp.x * va->view_pos
             + wp.y * vb->view_pos
             + wp.z * vc->view_pos;
-
-        Vec3 uv =
-              wp.x * va->uv
-            + wp.y * vb->uv
-            + wp.z * vc->uv;
         frag.color = texture.at_uv(uv);
     }
 
-    void Renderer::_rasterize(Face face, const Texture &texture, bool is_light, float shininess) {
+    void Renderer::_rasterize(Face face, const Texture &texture, bool is_skybox, bool is_light, float shininess) {
         // Sort the vertices by y-value
         if (face.vertices[0]->position.y > face.vertices[1]->position.y)
             std::swap(face.vertices[0], face.vertices[1]);
@@ -268,14 +274,13 @@ namespace proxima {
                 float tx = (float)(x - xac) / (xb - xac);
                 Vec3 w = lerp(wac, wb, tx); // The barycentric coordinate
                 int index = x + y * this->_width;
-                update_frag(this->_fragment_buffer[index], w, face, texture, is_light, shininess);
+                update_frag(this->_fragment_buffer[index], w, face, texture, is_skybox, is_light, shininess);
             }
         }
     }
 
     Vec3 Renderer::_shade(const Fragment &frag) {
-        if (frag.is_nothing) return this->_scene->bg_color;
-        if (frag.is_light) return frag.color;
+        if (frag.is_skybox || frag.is_light) return frag.color;
 
         // Ambient reflection
         Vec3 ambient = this->_scene->ambient_light * Vec3(1, 1, 1);
@@ -307,6 +312,8 @@ namespace proxima {
         this->_scene = &scene;
         this->_init_fragment_buffer();
         this->_calc_matrices();
+
+        // Sort out the light sources
         this->_light_sources.clear();
         for (auto &obj_entry : scene.objects()) {
             if (obj_entry.second->is_light()) {
@@ -315,8 +322,15 @@ namespace proxima {
                 this->_light_sources.push_back(light_source);
             }
         }
+
+        // Create and render the skybox
+        Object skybox(Mesh::Skybox(), scene.skybox);
+        skybox.position = scene.camera.position;
+        skybox.scale = Vec3(1, 1, 1) * scene.camera.far;
+        this->_render_object(skybox, true);
+
         for (auto &obj_entry : scene.objects()) {
-            this->_render_object(*obj_entry.second);
+            this->_render_object(*obj_entry.second, false);
         }
         for (int i=0; i<this->_num_pixels; i++) {
             this->_frame_buffer[i] = color2rgba(this->_shade(this->_fragment_buffer[i]));

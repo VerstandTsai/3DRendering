@@ -116,6 +116,14 @@ namespace proxima {
         return mesh;
     }
 
+    Mesh Mesh::Skybox() {
+        Mesh mesh = Mesh::Cube();
+        for (Vec3 &normal : mesh._vertex_normals) {
+            normal = -normal;
+        }
+        return mesh;
+    }
+
     Mesh Mesh::Sphere(int resolution) {
         Mesh mesh;
         mesh._has_normal = true;

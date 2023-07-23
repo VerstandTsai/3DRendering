@@ -1,8 +1,10 @@
 #include "scene.h"
+#include "objects.h"
+#include "texture.h"
 
 namespace proxima {
-    Scene::Scene(Vec3 bg_color, float ambient_light) {
-        this->bg_color = bg_color;
+    Scene::Scene(Texture skybox, float ambient_light) {
+        this->skybox = skybox;
         this->ambient_light = ambient_light;
     }
 
