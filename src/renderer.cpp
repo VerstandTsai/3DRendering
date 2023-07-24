@@ -324,7 +324,7 @@ namespace proxima {
         }
 
         // Create and render the skybox
-        Object skybox(Mesh::Skybox(), scene.skybox);
+        Object skybox(Mesh::Cube(), scene.skybox);
         skybox.position = scene.camera.position;
         skybox.scale = Vec3(1, 1, 1) * scene.camera.far;
         this->_render_object(skybox, true);

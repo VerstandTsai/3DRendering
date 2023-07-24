@@ -10,7 +10,7 @@ int main() {
     Window window(width, height);
     Renderer renderer(width, height);
 
-    Scene scene(Texture("./static/skybox.jpg"));
+    Scene scene(Texture("./static/skybox.png"));
 
     scene.camera.position = Vec3(0, 0, 8);
 
