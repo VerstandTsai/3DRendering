@@ -1,4 +1,4 @@
-INC = ./includes
+INC = ./include
 SRC = ./src
 TESTS = ./tests
 CXX = g++
