@@ -1,7 +1,11 @@
 #pragma once
 
-#include <array>
+#ifdef __MINGW32__
+    #define _USE_MATH_DEFINES
+#endif
+
 #include <cmath>
+#include <array>
 #include <iostream>
 
 namespace proxima {

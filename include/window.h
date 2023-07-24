@@ -1,6 +1,10 @@
 #pragma once
 
 #include <SDL2/SDL.h>
+#ifdef __MINGW32__
+    #undef main
+#endif
+
 #include <map>
 
 namespace proxima {
