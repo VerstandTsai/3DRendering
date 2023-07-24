@@ -13,6 +13,9 @@ namespace proxima {
             SDL_Init(SDL_INIT_VIDEO);
             _sdl_inited = true;
         }
+        #ifdef __MINGW32__
+            SDL_SetRelativeMouseMode(SDL_TRUE);
+        #endif
         SDL_CreateWindowAndRenderer(width, height, SDL_WINDOW_SHOWN, &this->_window, &this->_renderer);
         this->_buffer = SDL_CreateTexture(
             this->_renderer,
@@ -38,6 +41,9 @@ namespace proxima {
             case SDL_QUIT:
                 return true;
             case SDL_KEYDOWN:
+                if (event.key.keysym.sym == SDLK_ESCAPE) {
+                    return true;
+                }
                 this->_keyboard[event.key.keysym.sym] = true;
                 break;
             case SDL_KEYUP:
