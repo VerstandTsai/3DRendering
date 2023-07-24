@@ -10,7 +10,7 @@ int main() {
     Window window(width, height);
     Renderer renderer(width, height);
 
-    Scene scene(Texture("./static/skybox.png"));
+    Scene scene(Texture("./assets/skybox.png"));
 
     scene.camera.position = Vec3(0, 0, 8);
 
@@ -26,16 +26,16 @@ int main() {
     scene["donut"] = new Object(Mesh::Torus(), Texture::Checker(16, 8));
     scene["donut"]->position = Vec3(0, 5, 0);
 
-    scene["monkey"] = new Object(Mesh("./static/suzanne.obj"), Texture("./static/suzanne_texture.png"));
+    scene["monkey"] = new Object(Mesh("./assets/suzanne.obj"), Texture("./assets/suzanne_texture.png"));
     scene["monkey"]->position = Vec3(-5, 0, 0);
 
-    scene["cuboid"] = new Object(Mesh::Cube(), Texture("./static/cube_texture.png"));
+    scene["cuboid"] = new Object(Mesh::Cube(), Texture("./assets/cube_texture.png"));
     scene["cuboid"]->position = Vec3(-2, 0, 0);
 
-    scene["sphere"] = new Object(Mesh::Sphere(), Texture("./static/map.png"));
+    scene["sphere"] = new Object(Mesh::Sphere(), Texture("./assets/map.png"));
     scene["sphere"]->position = Vec3(0, 0, 0);
 
-    scene["teapot"] = new Object(Mesh("./static/teapot.obj"), Texture::Color(Vec3(0.8, 0.8, 0.8)));
+    scene["teapot"] = new Object(Mesh("./assets/teapot.obj"), Texture::Color(Vec3(0.8, 0.8, 0.8)));
     scene["teapot"]->position = Vec3(5, 0, 0);
     scene["teapot"]->euler_angles = Vec3(0, 90, 0);
 
