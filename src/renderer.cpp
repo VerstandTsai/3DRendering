@@ -192,7 +192,7 @@ namespace proxima {
         }
     }
 
-    void update_frag(Fragment &frag, Vec3 w, Face face, const Texture &texture, bool is_skybox, bool is_light, float shininess) {
+    inline void update_frag(Fragment &frag, Vec3 w, Face face, const Texture &texture, bool is_skybox, bool is_light, float shininess) {
         Vertex *va = face.vertices[0];
         Vertex *vb = face.vertices[1];
         Vertex *vc = face.vertices[2];
@@ -270,11 +270,15 @@ namespace proxima {
             }
             int xmin = fmin(xac, xb);
             int xmax = fmax(xac, xb);
+            int base_index = y * this->_width;
             for (int x=fmax(0, xmin); x<fmin(this->_width, xmax); x++) {
                 float tx = (float)(x - xac) / (xb - xac);
                 Vec3 w = lerp(wac, wb, tx); // The barycentric coordinate
-                int index = x + y * this->_width;
-                update_frag(this->_fragment_buffer[index], w, face, texture, is_skybox, is_light, shininess);
+                update_frag(
+                    this->_fragment_buffer[x + base_index],
+                    w, face, texture,
+                    is_skybox, is_light, shininess
+                );
             }
         }
     }
