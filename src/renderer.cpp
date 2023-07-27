@@ -192,17 +192,13 @@ namespace proxima {
         }
     }
 
-    inline void update_frag(Fragment &frag, Vec3 w, Face face, const Texture &texture, bool is_skybox, bool is_light, float shininess) {
+    void update_frag(Fragment &frag, Vec3 w, Vec3 z_rec, const Face &face, const Texture &texture, bool is_skybox, bool is_light, float shininess) {
         Vertex *va = face.vertices[0];
         Vertex *vb = face.vertices[1];
         Vertex *vc = face.vertices[2];
 
         // Perspective-correct barycentric coordinate
-        Vec3 wp = Vec3(
-            w.x / va->view_pos.z,
-            w.y / vb->view_pos.z,
-            w.z / vc->view_pos.z
-        );
+        Vec3 wp = w * z_rec;
         wp /= dot(wp, Vec3(1, 1, 1));
 
         Vec3 uv =
@@ -250,6 +246,12 @@ namespace proxima {
         if (face.vertices[1]->position.y > face.vertices[2]->position.y)
             std::swap(face.vertices[1], face.vertices[2]);
 
+        Vec3 z_rec = Vec3(
+            1 / face.vertices[0]->view_pos.z,
+            1 / face.vertices[1]->view_pos.z,
+            1 / face.vertices[2]->view_pos.z
+        );
+
         Vec3 a = face.vertices[0]->position;
         Vec3 b = face.vertices[1]->position;
         Vec3 c = face.vertices[2]->position;
@@ -276,7 +278,7 @@ namespace proxima {
                 Vec3 w = lerp(wac, wb, tx); // The barycentric coordinate
                 update_frag(
                     this->_fragment_buffer[x + base_index],
-                    w, face, texture,
+                    w, z_rec, face, texture,
                     is_skybox, is_light, shininess
                 );
             }
