@@ -8,3 +8,7 @@
 compile_flags.txt
 gmon.out
 
+!/lib/
+!/lib/*
+!/lib/**/*
+

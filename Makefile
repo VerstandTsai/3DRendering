@@ -2,14 +2,15 @@ TARGET_OS = Linux
 
 INC = ./include
 SRC = ./src
+LIB = ./lib
 TESTS = ./tests
 
-CXXFLAGS = -Wall -g -pg -std=c++2a -O3 -ffast-math -I$(INC)
-LDFLAGS = -L.
-LDLIBS = -lprox -lSDL2
+CXXFLAGS = -Wall -g -pg -std=c++2a -O3 -ffast-math -I$(INC) -I$(LIB)/stb_image/include
+LDFLAGS = -L. -L$(LIB)/stb_image/lib
+LDLIBS = -lprox -lstb_image -lSDL2
 
 ifeq ($(TARGET_OS),Windows)
-	SDL_MINGW = ./lib/SDL2-mingw32
+	SDL_MINGW = $(LIB)/SDL2-mingw32
 	CXX = x86_64-w64-mingw32-g++
 	CXXFLAGS += -I$(SDL_MINGW)/include
 	LDFLAGS += -L$(SDL_MINGW)/lib
