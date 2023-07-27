@@ -9,7 +9,7 @@ LDFLAGS = -L.
 LDLIBS = -lprox -lSDL2
 
 ifeq ($(TARGET_OS),Windows)
-	SDL_MINGW = ./lib/SDL2-2.28.1/x86_64-w64-mingw32
+	SDL_MINGW = ./lib/SDL2-mingw32
 	CXX = x86_64-w64-mingw32-g++
 	CXXFLAGS += -I$(SDL_MINGW)/include
 	LDFLAGS += -L$(SDL_MINGW)/lib
