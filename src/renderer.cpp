@@ -119,22 +119,27 @@ namespace proxima {
             for (int i=0; i<3; i++) {
                 Vertex *a = face.vertices[i];
                 Vertex *b = face.vertices[(i+1)%3];
+
+                // Add a as long as it's inside
                 if (a->position.z > 0) {
                     face_vertices.push_back(a);
                     new_vertices.insert(a);
                 } else {
                     old_vertices.insert(a);
                 }
-                if (a->position.z * b->position.z < 0) {
-                    float t = a->position.z / (a->position.z - b->position.z);
-                    Vec4 new_pos = lerp(a->position, b->position, t);
-                    Vec3 new_normal = lerp(a->normal, b->normal, t).normalized();
-                    Vec3 new_uv = lerp(a->uv, b->uv, t);
-                    Vec3 new_view_pos = lerp(a->view_pos, b->view_pos, t);
-                    Vertex *new_vertex = new Vertex(new_pos, new_normal, new_uv, new_view_pos);
-                    face_vertices.push_back(new_vertex);
-                    new_vertices.insert(new_vertex);
-                }
+
+                // Continue if same side
+                if (a->position.z * b->position.z > 0) continue;
+
+                // Or we clip and add the new vertex
+                float t = a->position.z / (a->position.z - b->position.z);
+                Vec4 new_pos = lerp(a->position, b->position, t);
+                Vec3 new_normal = lerp(a->normal, b->normal, t).normalized();
+                Vec3 new_uv = lerp(a->uv, b->uv, t);
+                Vec3 new_view_pos = lerp(a->view_pos, b->view_pos, t);
+                Vertex *new_vertex = new Vertex(new_pos, new_normal, new_uv, new_view_pos);
+                face_vertices.push_back(new_vertex);
+                new_vertices.insert(new_vertex);
             }
             if (face_vertices.size() == 0) continue;
             new_faces.push_back(Face({face_vertices[0], face_vertices[1], face_vertices[2]}));
@@ -173,12 +178,12 @@ namespace proxima {
 
         // Transform to screen space
         for (Vertex *v : new_vertices) {
-            Vec3 ndc_space = v->position;
+            Vec3 ndc_space = v->position; // Perspective divide
             int half_width = this->_width >> 1;
             int half_height = this->_height >> 1;
             int screen_x = (ndc_space.x + 1) * half_width;
             int screen_y = (-ndc_space.y + 1) * half_height;
-            v->position = Vec3(screen_x, screen_y, ndc_space.z);
+            v->position = Vec4(screen_x, screen_y, ndc_space.z, 1 / v->position.w);
         }
 
         // Create the fragments
@@ -192,14 +197,10 @@ namespace proxima {
         }
     }
 
-    void update_frag(Fragment &frag, Vec3 w, Vec3 z_rec, const Face &face, const Texture &texture, bool is_skybox, bool is_light, float shininess) {
+    void update_frag(Fragment &frag, Vec3 w, Vec3 wp, const Face &face, const Texture &texture, bool is_skybox, bool is_light, float shininess) {
         Vertex *va = face.vertices[0];
         Vertex *vb = face.vertices[1];
         Vertex *vc = face.vertices[2];
-
-        // Perspective-correct barycentric coordinate
-        Vec3 wp = w * z_rec;
-        wp /= dot(wp, Vec3(1, 1, 1));
 
         Vec3 uv =
               wp.x * va->uv
@@ -246,15 +247,10 @@ namespace proxima {
         if (face.vertices[1]->position.y > face.vertices[2]->position.y)
             std::swap(face.vertices[1], face.vertices[2]);
 
-        Vec3 z_rec = Vec3(
-            1 / face.vertices[0]->view_pos.z,
-            1 / face.vertices[1]->view_pos.z,
-            1 / face.vertices[2]->view_pos.z
-        );
+        Vec4 a = face.vertices[0]->position;
+        Vec4 b = face.vertices[1]->position;
+        Vec4 c = face.vertices[2]->position;
 
-        Vec3 a = face.vertices[0]->position;
-        Vec3 b = face.vertices[1]->position;
-        Vec3 c = face.vertices[2]->position;
         for (int y=fmax(0, a.y); y<fmin(this->_height, c.y); y++) {
             float tac = (float)(y - a.y) / (c.y - a.y);
             Vec3 wac = lerp(Vec3(1, 0, 0), Vec3(0, 0, 1), tac);
@@ -275,10 +271,17 @@ namespace proxima {
             int base_index = y * this->_width;
             for (int x=fmax(0, xmin); x<fmin(this->_width, xmax); x++) {
                 float tx = (float)(x - xac) / (xb - xac);
-                Vec3 w = lerp(wac, wb, tx); // The barycentric coordinate
+
+                // Barycentric coordinate
+                Vec3 w = lerp(wac, wb, tx);
+
+                // Perspective-correct barycentric coordinate
+                Vec3 wp = w * Vec3(a.w, b.w, c.w);
+                wp /= dot(wp, Vec3(1, 1, 1));
+
                 update_frag(
                     this->_fragment_buffer[x + base_index],
-                    w, z_rec, face, texture,
+                    w, wp, face, texture,
                     is_skybox, is_light, shininess
                 );
             }
@@ -322,11 +325,11 @@ namespace proxima {
         // Sort out the light sources
         this->_light_sources.clear();
         for (auto &obj_entry : scene.objects()) {
-            if (obj_entry.second->is_light()) {
-                PointLight light_source = *(PointLight*)(obj_entry.second);
-                light_source.position = this->_view_matrix * light_source.position;
-                this->_light_sources.push_back(light_source);
-            }
+            if (!(obj_entry.second->is_light())) continue;
+
+            PointLight light_source = *(PointLight*)(obj_entry.second);
+            light_source.position = this->_view_matrix * light_source.position;
+            this->_light_sources.push_back(light_source);
         }
 
         // Create and render the skybox
