@@ -39,7 +39,8 @@ namespace proxima {
         int index = 0;
         for (int i=0; i<height; i++) {
             for (int j=0; j<width; j++) {
-                texture._data[index] = ((i + j) % 2) * Vec3(1, 1, 1);
+                int t = (i + j) & 1;
+                texture._data[index] = lerp(Vec3(0.1, 0.1, 0.1), Vec3(1, 1, 1), t);
                 index++;
             }
         }
