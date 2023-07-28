@@ -4,6 +4,10 @@
 
 using namespace proxima;
 
+float f(float x, float y) {
+    return sin(x) + cos(y);
+}
+
 int main() {
     int width = 1280;
     int height = 720;
@@ -40,7 +44,8 @@ int main() {
     scene["teapot"]->euler_angles = Vec3(0, 90, 0);
 
     //scene["floor"] = new Object(Mesh::Plane(), Texture::Checker(8, 8));
-    scene["floor"] = new Object(Mesh::Terrain(Texture("./assets/heightmap.png"), 100), Texture::Checker(8, 8));
+    //scene["floor"] = new Object(Mesh::Terrain(Texture("./assets/heightmap.png"), 100), Texture::Checker(8, 8));
+    scene["floor"] = new Object(Mesh::Plot(f, 10, 100), Texture::Checker(8, 8));
     scene["floor"]->position = Vec3(0, -10, 0);
     scene["floor"]->scale = Vec3(100, 100, 100);
 

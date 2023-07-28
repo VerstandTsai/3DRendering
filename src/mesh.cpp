@@ -98,6 +98,16 @@ namespace proxima {
         return mesh;
     }
 
+    Mesh Mesh::Plot(float (*func)(float x, float y), float range, int resolution) {
+        Mesh mesh = Mesh::Plane(resolution);
+        mesh._has_normal = false;
+        float range_rec = 1 / range;
+        for (int i=0; i<(int)mesh._vertices.size(); i++) {
+            mesh._vertices[i].y = func(range * mesh._vertices[i].x, range * mesh._vertices[i].z) * range_rec;
+        }
+        return mesh;
+    }
+
     Mesh Mesh::Cube() {
         Mesh mesh;
         mesh._has_normal = true;
