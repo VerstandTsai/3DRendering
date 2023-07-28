@@ -24,6 +24,7 @@ namespace proxima {
         const std::vector<std::array<int, 9>> &face_indices() const { return this->_face_indices; }
         Mesh() : _has_normal(false), _has_uv(false) {};
         Mesh(std::string filename);
+        static Mesh Plane(int resolution=20);
         static Mesh Cube();
         static Mesh Sphere(int resolution=20);
         static Mesh Torus(float thickness=0.5, int resolution=20);

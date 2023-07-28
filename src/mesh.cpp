@@ -58,6 +58,36 @@ namespace proxima {
         }
     }
 
+    Mesh Mesh::Plane(int resolution) {
+        Mesh mesh;
+        mesh._has_normal = true;
+        mesh._has_uv = true;
+
+        mesh._vertex_normals.push_back(Vec3(0, 1, 0));
+
+        float delta = 1.0 / resolution;
+        int index = 0;
+        for (int i=0; i<resolution+1; i++) {
+            for (int j=0; j<resolution+1; j++) {
+                mesh._vertices.push_back(Vec3(-1 + j * 2 * delta, 0, -1 + i * 2 * delta));
+                mesh._uv_coordinates.push_back(Vec3(j * delta, 1 - i * delta, 0));
+                if (i != 0 && j != 0) {
+                    int a, b, c, d;
+                    c = index;
+                    d = c - resolution - 1;
+                    b = c - 1;
+                    a = d - 1;
+
+                    mesh._face_indices.push_back({a, b, c, 0, 0, 0, a, b, c});
+                    mesh._face_indices.push_back({c, d, a, 0, 0, 0, c, d, a});
+                }
+                index++;
+            }
+        }
+
+        return mesh;
+    }
+
     Mesh Mesh::Cube() {
         Mesh mesh;
         mesh._has_normal = true;
@@ -79,7 +109,7 @@ namespace proxima {
         mesh._vertex_normals.push_back(Vec3( 0, -1,  0)); // Bottom
         mesh._vertex_normals.push_back(Vec3( 0,  0,  1)); // Front
         mesh._vertex_normals.push_back(Vec3( 0,  0, -1)); // Back
-        
+
         // Create UVs
         float delta_u = 1.0 / 4;
         float delta_v = 1.0 / 3;
