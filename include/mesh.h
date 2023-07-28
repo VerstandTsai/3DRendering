@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vec3.h"
+#include "texture.h"
 #include <array>
 #include <vector>
 #include <string>
@@ -25,6 +26,7 @@ namespace proxima {
         Mesh() : _has_normal(false), _has_uv(false) {};
         Mesh(std::string filename);
         static Mesh Plane(int resolution=20);
+        static Mesh Terrain(Texture heightmap, int resolution=20);
         static Mesh Cube();
         static Mesh Sphere(int resolution=20);
         static Mesh Torus(float thickness=0.5, int resolution=20);

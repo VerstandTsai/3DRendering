@@ -39,7 +39,8 @@ int main() {
     scene["teapot"]->position = Vec3(5, 0, 0);
     scene["teapot"]->euler_angles = Vec3(0, 90, 0);
 
-    scene["floor"] = new Object(Mesh::Plane(), Texture::Checker(8, 8));
+    //scene["floor"] = new Object(Mesh::Plane(), Texture::Checker(8, 8));
+    scene["floor"] = new Object(Mesh::Terrain(Texture("./assets/heightmap.png"), 100), Texture::Checker(8, 8));
     scene["floor"]->position = Vec3(0, -10, 0);
     scene["floor"]->scale = Vec3(100, 100, 100);
 

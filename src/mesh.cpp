@@ -1,4 +1,5 @@
 #include "mesh.h"
+#include "texture.h"
 #include "vec3.h"
 
 #include <fstream>
@@ -85,6 +86,15 @@ namespace proxima {
             }
         }
 
+        return mesh;
+    }
+
+    Mesh Mesh::Terrain(Texture heightmap, int resolution) {
+        Mesh mesh = Mesh::Plane(resolution);
+        mesh._has_normal = false;
+        for (int i=0; i<(int)mesh._vertices.size(); i++) {
+            mesh._vertices[i].y = 0.2 * heightmap.at_uv(mesh._uv_coordinates[i]).x;
+        }
         return mesh;
     }
 
