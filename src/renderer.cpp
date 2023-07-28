@@ -94,17 +94,18 @@ namespace proxima {
             }
         } else {
             for (std::array<int, 9> face_index : mesh.face_indices()) {
-                Vec3 a = mesh.vertices()[face_index[0]];
-                Vec3 b = mesh.vertices()[face_index[1]];
-                Vec3 c = mesh.vertices()[face_index[2]];
-                Vec3 normal = cross(b-a, c-a).normalized();
-                Vertex *va = new Vertex(a, normal);
-                Vertex *vb = new Vertex(b, normal);
-                Vertex *vc = new Vertex(c, normal);
-                vertices.push_back(va);
-                vertices.push_back(vb);
-                vertices.push_back(vc);
-                faces.push_back(Face({va, vb, vc}));
+                std::array<Vec3, 3> vs;
+                for (int i=0; i<3; i++) {
+                    vs[i] = mesh.vertices()[face_index[i]];
+                }
+                Vec3 normal = cross(vs[1]-vs[0], vs[2]-vs[0]).normalized();
+                std::array<Vertex*, 3> vp;
+                for (int i=0; i<3; i++) {
+                    Vec3 uv = mesh.has_uv() ? mesh.uv_coordinates()[face_index[i+6]] : Vec3();
+                    vp[i] = new Vertex(vs[i], normal, uv);
+                    vertices.push_back(vp[i]);
+                }
+                faces.push_back(Face(vp));
             }
         }
         return {vertices, faces};
