@@ -2,12 +2,41 @@
 #include "texture.h"
 #include "vec3.h"
 
+#include <array>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <cstdio>
+#include <vector>
 
 namespace proxima {
+    Mesh Mesh::smooth() {
+        Mesh mesh = *this;
+        mesh._has_normal = true;
+        mesh._vertex_normals.clear();
+        std::vector<std::vector<Vec3>> vn_table(mesh._vertices.size());
+        for (std::array<int, 9> &face_index : mesh._face_indices) {
+            Vec3 a = mesh._vertices[face_index[0]];
+            Vec3 b = mesh._vertices[face_index[1]];
+            Vec3 c = mesh._vertices[face_index[2]];
+            Vec3 normal = cross(b-a, c-a).normalized();
+            vn_table[face_index[0]].push_back(normal);
+            vn_table[face_index[1]].push_back(normal);
+            vn_table[face_index[2]].push_back(normal);
+            for (int i=0; i<3; i++) {
+                face_index[i+3] = face_index[i];
+            }
+        }
+        for (int i=0; i<(int)mesh._vertices.size(); i++) {
+            Vec3 sum = Vec3(0, 0, 0);
+            for (Vec3 normal : vn_table[i]) {
+                sum += normal;
+            }
+            mesh._vertex_normals.push_back(sum.normalized());
+        }
+        return mesh;
+    }
+
     Mesh::Mesh(std::string filename) : Mesh() {
         std::ifstream infile(filename);
         std::string line;
