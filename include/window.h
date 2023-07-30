@@ -11,6 +11,8 @@ namespace proxima {
     enum KeyCode {
         A = SDLK_a,
         D = SDLK_d,
+        E = SDLK_e,
+        Q = SDLK_q,
         S = SDLK_s,
         W = SDLK_w,
         SPACE = SDLK_SPACE,

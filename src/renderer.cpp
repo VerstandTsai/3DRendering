@@ -40,9 +40,11 @@ namespace proxima {
         float s = 1 / tan(deg2rad(cam.fov / 2));
         float x = deg2rad(cam.euler_angles.x);
         float y = deg2rad(cam.euler_angles.y);
+        float z = deg2rad(cam.euler_angles.z);
         float a = 1 / this->_aspect;
         this->_view_rotation =
-              Mat4::RotX(-x)
+              Mat4::RotZ(-z)
+            * Mat4::RotX(-x)
             * Mat4::RotY(-y);
         this->_view_matrix = this->_view_rotation * Mat4::Translation(-cam.position);
         this->_projection_matrix = Mat4({{

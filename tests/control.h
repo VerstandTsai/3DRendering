@@ -15,9 +15,13 @@ inline void control(Window &window, Camera &camera) {
     if (window.keydown(D))
         camera.position += right;
     if (window.keydown(SPACE))
-        camera.position += Vec3(0, 1, 0);
+        camera.position.y += 1;
     if (window.keydown(LSHIFT))
-        camera.position -= Vec3(0, 1, 0);
+        camera.position.y -= 1;
+    if (window.keydown(Q))
+        camera.euler_angles.z += 1;
+    if (window.keydown(E))
+        camera.euler_angles.z -= 1;
     if (window.mouse_button_down(RIGHT))
         camera.fov = 30;
     else
