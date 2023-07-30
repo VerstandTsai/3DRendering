@@ -163,9 +163,9 @@ namespace proxima {
         float y = deg2rad(obj.euler_angles.y);
         float z = deg2rad(obj.euler_angles.z);
         Mat4 model_rotation =
-              Mat4::RotZ(z)
-            * Mat4::RotY(y)
-            * Mat4::RotX(x);
+              Mat4::RotY(y)
+            * Mat4::RotX(x)
+            * Mat4::RotZ(z);
         Mat4 model_matrix = Mat4::Translation(obj.position) * model_rotation;
         Mat4 modelview_matrix = this->_view_matrix * model_matrix;
         Mat4 modelview_rotation = this->_view_rotation * model_rotation;
