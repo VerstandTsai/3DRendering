@@ -45,12 +45,12 @@ namespace proxima {
               Mat4::RotX(-x)
             * Mat4::RotY(-y);
         this->_view_matrix = this->_view_rotation * Mat4::Translation(-cam.position);
-        this->_projection_matrix = Mat4({{{
+        this->_projection_matrix = Mat4({{
             {a*s, 0,        0,          0},
             {  0, s,        0,          0},
             {  0, 0, -f/(f-n), -f*n/(f-n)},
             {  0, 0,       -1,          0}
-        }}});
+        }});
     }
 
     void Renderer::_init_fragment_buffer() {
@@ -68,7 +68,7 @@ namespace proxima {
         }
     }
 
-    std::tuple<std::vector<Vertex*>, std::vector<Face>> make_vf(const Mesh &mesh) {
+    std::tuple<std::vector<Vertex*>, std::vector<Face>> make_primitives(const Mesh &mesh) {
         std::vector<Vertex*> vertices;
         std::vector<Face> faces;
         if (mesh.has_normal()) {
@@ -156,7 +156,7 @@ namespace proxima {
     }
 
     void Renderer::_render_object(const Object &obj, bool is_skybox) {
-        auto [vertices, faces] = make_vf(obj.mesh());
+        auto [vertices, faces] = make_primitives(obj.mesh());
 
         // Project the vertices to clip space
         float x = deg2rad(obj.euler_angles.x);
