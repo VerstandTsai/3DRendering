@@ -5,6 +5,7 @@
 *.exe
 *.a
 *.o
+/bin/
 compile_flags.txt
 gmon.out
 

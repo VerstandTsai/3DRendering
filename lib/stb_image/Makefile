@@ -1,16 +1,25 @@
+TARGET_OS = Linux
+
 INC = ./include
 SRC = ./src
 LIB = ./lib
 
-CC = gcc
 CFLAGS = -Wall -g -O3 -I$(INC)
+
+ifeq ($(TARGET_OS),Windows)
+	CC = x86_64-w64-mingw32-gcc
+	LIBNAME = $(LIB)/libstb_image-mingw32.a
+else
+	CC = gcc
+	LIBNAME = $(LIB)/libstb_image.a
+endif
 
 AR = ar
 RM = rm
 
-all: $(LIB)/libstb_image.a
+all: $(LIBNAME)
 
-$(LIB)/libstb_image.a: stb_image.o
+$(LIBNAME): stb_image.o
 	$(AR) -rcs $@ $^
 	$(RM) $^
 
